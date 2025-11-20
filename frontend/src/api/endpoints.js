@@ -1,35 +1,44 @@
-import axios from 'axios';
+// ========================================
+// QUIENTETO.CA - API ENDPOINTS
+// ========================================
+// This file provides a simple interface to the API client
+// It works with both REST API and Supabase backends
+// ========================================
 
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+import { apiClient } from '../lib/api-client';
 
-// Group endpoints
+// ========================================
+// GROUP ENDPOINTS
+// ========================================
+
 export const createGroup = async (groupData) => {
-  const response = await api.post('/groups', groupData);
-  return response.data;
+  return await apiClient.createGroup(groupData);
 };
 
-export const getGroup = async (groupId) => {
-  const response = await api.get(`/groups/${groupId}`);
-  return response.data;
+export const getGroup = async (groupId, adminToken) => {
+  return await apiClient.getGroup(groupId, adminToken);
 };
 
 export const updateGroup = async (groupId, updateData) => {
-  const response = await api.put(`/groups/${groupId}`, updateData);
-  return response.data;
+  return await apiClient.updateGroup(groupId, updateData);
 };
 
-// Participant endpoints
+// ========================================
+// PARTICIPANT ENDPOINTS
+// ========================================
+
 export const getParticipant = async (participantId) => {
-  const response = await api.get(`/participants/${participantId}`);
-  return response.data;
+  return await apiClient.getParticipant(participantId);
 };
 
 export const updateParticipant = async (participantId, updateData) => {
-  const response = await api.put(`/participants/${participantId}`, updateData);
-  return response.data;
+  return await apiClient.updateParticipant(participantId, updateData);
+};
+
+// ========================================
+// UTILITY ENDPOINTS
+// ========================================
+
+export const healthCheck = async () => {
+  return await apiClient.healthCheck();
 };

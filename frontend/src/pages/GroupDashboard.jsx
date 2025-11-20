@@ -3,36 +3,46 @@ import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useGroupData } from '../hooks/useGroupData';
 import PriceRangePieChart from '../components/charts/PriceRangePieChart';
-import { Calendar, Users, Clock, AlertCircle } from 'lucide-react';
+import { Calendar, Users, Clock } from 'lucide-react';
+import LoadingSpinner from '../components/ui/LoadingSpinner';
+import ErrorDisplay from '../components/ui/ErrorDisplay';
 
 export default function GroupDashboard() {
-  const { groupId } = useParams();
+  const { groupId, adminToken } = useParams();
   const { t } = useTranslation();
   const { group, loading, error, fetchGroup } = useGroupData();
 
   useEffect(() => {
-    if (groupId) {
-      fetchGroup(groupId);
+    if (groupId && adminToken) {
+      fetchGroup(groupId, adminToken);
     }
-  }, [groupId, fetchGroup]);
+  }, [groupId, adminToken, fetchGroup]);
+
+  // Check if admin token is provided
+  if (!adminToken) {
+    return (
+      <ErrorDisplay
+        title={t('groupDashboard.error.noToken') || 'Access Denied'}
+        message={t('groupDashboard.error.tokenRequired') || 'Admin token required to access this page.'}
+        variant="warning"
+        showHome
+      />
+    );
+  }
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600" />
-      </div>
-    );
+    return <LoadingSpinner fullScreen message={t('common.loading')} />;
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="text-center">
-          <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold mb-2">{t('groupDashboard.error.title')}</h2>
-          <p className="text-gray-600 dark:text-gray-400">{error}</p>
-        </div>
-      </div>
+      <ErrorDisplay
+        title={t('groupDashboard.error.title') || 'Error Loading Group'}
+        message={error}
+        showRefresh
+        showHome
+        onRefresh={() => fetchGroup(groupId, adminToken)}
+      />
     );
   }
 

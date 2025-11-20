@@ -1,20 +1,20 @@
 import { useState, useCallback } from 'react';
+import {
+  getGroup,
+  createGroup as createGroupAPI,
+  updateGroup as updateGroupAPI
+} from '../api/endpoints';
 
 export const useGroupData = () => {
   const [group, setGroup] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const fetchGroup = useCallback(async (groupId) => {
+  const fetchGroup = useCallback(async (groupId, adminToken) => {
     setLoading(true);
     setError(null);
     try {
-      // TODO: Replace with actual API call
-      const response = await fetch(`/api/groups/${groupId}`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch group data');
-      }
-      const data = await response.json();
+      const data = await getGroup(groupId, adminToken);
       setGroup(data);
     } catch (err) {
       setError(err.message);
@@ -27,18 +27,7 @@ export const useGroupData = () => {
     setLoading(true);
     setError(null);
     try {
-      // TODO: Replace with actual API call
-      const response = await fetch('/api/groups', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(groupData),
-      });
-      if (!response.ok) {
-        throw new Error('Failed to create group');
-      }
-      const data = await response.json();
+      const data = await createGroupAPI(groupData);
       setGroup(data);
       return data;
     } catch (err) {
@@ -53,18 +42,7 @@ export const useGroupData = () => {
     setLoading(true);
     setError(null);
     try {
-      // TODO: Replace with actual API call
-      const response = await fetch(`/api/groups/${groupId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updates),
-      });
-      if (!response.ok) {
-        throw new Error('Failed to update group');
-      }
-      const data = await response.json();
+      const data = await updateGroupAPI(groupId, updates);
       setGroup(data);
       return data;
     } catch (err) {

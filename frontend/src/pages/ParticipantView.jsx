@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useParticipant } from '../hooks/useParticipant';
-import { Gift, AlertCircle, Send, Plus, X, DollarSign, Calendar } from 'lucide-react';
+import { Gift, Plus, X, DollarSign, Calendar } from 'lucide-react';
 import { Alert, AlertDescription } from "../components/ui/alert";
+import LoadingSpinner from '../components/ui/LoadingSpinner';
+import ErrorDisplay from '../components/ui/ErrorDisplay';
 
 export default function ParticipantView() {
   const { participantId } = useParams();
@@ -62,69 +64,66 @@ export default function ParticipantView() {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600" />
-      </div>
-    );
+    return <LoadingSpinner fullScreen message={t('common.loading')} />;
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="text-center">
-          <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold mb-2">{t('participantView.error.title')}</h2>
-          <p className="text-gray-600 dark:text-gray-400">{error}</p>
-        </div>
-      </div>
+      <ErrorDisplay
+        title={t('participantView.error.title')}
+        message={error}
+        showRefresh
+        showHome
+      />
     );
   }
 
   if (!participant) return null;
 
   return (
-    <div className="min-h-screen p-4">
+    <div className="min-h-screen p-4 pb-12">
       <div className="max-w-3xl mx-auto space-y-8">
         {/* Header with Match Info */}
-        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6">
-          <div className="flex items-center gap-4 mb-4">
-            <Gift className="w-8 h-8 text-purple-500" />
+        <div className="card-brutal p-6 hover:shadow-brutal-lg transition-shadow">
+          <div className="flex items-center gap-4 mb-6">
+            <div className="p-3 bg-christmas-green rounded-brutal border-2 border-black dark:border-white">
+              <Gift className="w-8 h-8 text-christmas-black" strokeWidth={2.5} />
+            </div>
             <div>
-              <h1 className="text-2xl font-bold">{t('participantView.yourMatch')}</h1>
-              <p className="text-gray-600 dark:text-gray-400">
+              <h1 className="text-3xl font-bold">{t('participantView.yourMatch')}</h1>
+              <p className="text-gray-700 dark:text-gray-300 font-medium">
                 {t('participantView.buyingGiftFor')}
               </p>
             </div>
           </div>
-          <div className="text-center p-6 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-            <h2 className="text-3xl font-bold text-purple-600 dark:text-purple-400">
+          <div className="text-center p-8 bg-christmas-red/10 border-brutal border-christmas-red rounded-brutal-lg">
+            <h2 className="text-4xl font-bold text-christmas-red">
               {participant.assignedTo.name}
             </h2>
           </div>
         </div>
 
         {/* Event Details */}
-        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6">
-          <h3 className="text-xl font-semibold mb-4">{t('participantView.eventDetails')}</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="flex items-center gap-3">
-              <Calendar className="w-5 h-5 text-purple-500" />
+        <div className="card-brutal p-6 hover:shadow-brutal-lg transition-shadow">
+          <h3 className="text-2xl font-bold mb-6">{t('participantView.eventDetails')}</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="flex items-center gap-4 p-4 bg-christmas-yellow/20 border-2 border-christmas-yellow rounded-brutal">
+              <Calendar className="w-6 h-6 text-christmas-black" strokeWidth={2.5} />
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <p className="text-sm font-bold text-gray-700 dark:text-gray-300">
                   {t('participantView.eventDate')}
                 </p>
-                <p className="font-medium">{formatDate(participant.group.eventDate)}</p>
+                <p className="font-bold text-lg">{formatDate(participant.group.eventDate)}</p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <DollarSign className="w-5 h-5 text-purple-500" />
+            <div className="flex items-center gap-4 p-4 bg-christmas-green/20 border-2 border-christmas-green rounded-brutal">
+              <DollarSign className="w-6 h-6 text-christmas-black" strokeWidth={2.5} />
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <p className="text-sm font-bold text-gray-700 dark:text-gray-300">
                   {t('participantView.priceRange')}
                 </p>
-                <p className="font-medium">
-                  {formatCurrency(participant.group.priceRange.min, participant.group.priceRange.currency)} - 
+                <p className="font-bold text-lg">
+                  {formatCurrency(participant.group.priceRange.min, participant.group.priceRange.currency)} -
                   {formatCurrency(participant.group.priceRange.max, participant.group.priceRange.currency)}
                 </p>
               </div>
@@ -134,18 +133,19 @@ export default function ParticipantView() {
 
         {/* Match's Wishlist */}
         {participant.assignedTo.wishlist?.length > 0 && (
-          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6">
-            <h3 className="text-xl font-semibold mb-4">
+          <div className="card-brutal p-6 hover:shadow-brutal-lg transition-shadow bg-christmas-green/5">
+            <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">
+              <Gift className="w-6 h-6 text-christmas-green" strokeWidth={2.5} />
               {t('participantView.matchWishlist')}
             </h3>
-            <ul className="space-y-2">
+            <ul className="space-y-3">
               {participant.assignedTo.wishlist.map((item, index) => (
-                <li 
+                <li
                   key={index}
-                  className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg flex items-center"
+                  className="p-4 bg-white dark:bg-christmas-black border-2 border-christmas-green rounded-brutal flex items-center shadow-brutal-sm"
                 >
-                  <Gift className="w-4 h-4 text-purple-500 mr-3" />
-                  <span>{item}</span>
+                  <Gift className="w-5 h-5 text-christmas-green mr-4" strokeWidth={2.5} />
+                  <span className="font-semibold">{item}</span>
                 </li>
               ))}
             </ul>
@@ -153,52 +153,52 @@ export default function ParticipantView() {
         )}
 
         {/* Your Wishlist */}
-        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6">
-          <h3 className="text-xl font-semibold mb-4">{t('participantView.yourWishlist')}</h3>
-          
+        <div className="card-brutal p-6 hover:shadow-brutal-lg transition-shadow bg-christmas-yellow/5">
+          <h3 className="text-2xl font-bold mb-6">{t('participantView.yourWishlist')}</h3>
+
           {/* Add Wishlist Item */}
-          <div className="flex gap-2 mb-4">
+          <div className="flex gap-3 mb-6">
             <input
               type="text"
               value={wishlistItem}
               onChange={(e) => setWishlistItem(e.target.value)}
               placeholder={t('participantView.wishlistPlaceholder')}
-              className="flex-1 px-4 py-2 rounded-lg border dark:bg-gray-800 dark:border-gray-700"
+              className="input-brutal flex-1"
               onKeyPress={(e) => e.key === 'Enter' && handleAddWishlistItem()}
             />
             <button
               onClick={handleAddWishlistItem}
-              className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center gap-2"
+              className="btn-accent flex items-center gap-2 px-6"
             >
-              <Plus className="w-4 h-4" />
+              <Plus className="w-5 h-5" strokeWidth={2.5} />
               {t('participantView.addItem')}
             </button>
           </div>
 
           {/* Wishlist Items */}
           {participant.wishlist?.length > 0 ? (
-            <ul className="space-y-2">
+            <ul className="space-y-3">
               {participant.wishlist.map((item, index) => (
-                <li 
+                <li
                   key={index}
-                  className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg flex items-center justify-between"
+                  className="p-4 bg-white dark:bg-christmas-black border-2 border-christmas-yellow rounded-brutal flex items-center justify-between shadow-brutal-sm"
                 >
-                  <span>{item}</span>
+                  <span className="font-semibold">{item}</span>
                   <button
                     onClick={() => handleRemoveWishlistItem(index)}
-                    className="text-gray-400 hover:text-red-500"
+                    className="p-2 rounded-brutal border-2 border-black dark:border-white hover:bg-red-100 dark:hover:bg-red-900 transition-colors"
                   >
-                    <X className="w-4 h-4" />
+                    <X className="w-4 h-4" strokeWidth={2.5} />
                   </button>
                 </li>
               ))}
             </ul>
           ) : (
-            <Alert>
-              <AlertDescription>
+            <div className="p-4 bg-white dark:bg-christmas-black border-2 border-dashed border-gray-400 dark:border-gray-600 rounded-brutal text-center">
+              <p className="text-gray-600 dark:text-gray-400 font-medium">
                 {t('participantView.emptyWishlist')}
-              </AlertDescription>
-            </Alert>
+              </p>
+            </div>
           )}
         </div>
       </div>

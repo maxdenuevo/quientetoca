@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { PieChart, Pie, Cell, Legend, Tooltip, ResponsiveContainer } from 'recharts';
 
@@ -21,13 +22,13 @@ const CustomTooltip = ({ active, payload }) => {
   return null;
 };
 
-const PriceRangePieChart = ({ votes }) => {
+function PriceRangePieChart({ votes }) {
   const { t } = useTranslation();
 
   // Process votes data for the chart
   const chartData = useMemo(() => {
     const totalVotes = votes.reduce((sum, range) => sum + range.count, 0);
-    
+
     return votes.map(range => ({
       name: `${range.min} - ${range.max} ${range.currency}`,
       value: (range.count / totalVotes) * 100,
@@ -71,6 +72,22 @@ const PriceRangePieChart = ({ votes }) => {
       </ResponsiveContainer>
     </div>
   );
+}
+
+PriceRangePieChart.propTypes = {
+  votes: PropTypes.arrayOf(
+    PropTypes.shape({
+      min: PropTypes.number.isRequired,
+      max: PropTypes.number.isRequired,
+      currency: PropTypes.string.isRequired,
+      count: PropTypes.number.isRequired,
+    })
+  ).isRequired,
+};
+
+CustomTooltip.propTypes = {
+  active: PropTypes.bool,
+  payload: PropTypes.array,
 };
 
 export default PriceRangePieChart;

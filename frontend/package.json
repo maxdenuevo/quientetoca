@@ -1,5 +1,5 @@
 {
-  "name": "secrete-frontend",
+  "name": "quienteto",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -7,31 +7,44 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage",
+    "import-test": "node scripts/import-test-group.js"
   },
   "dependencies": {
-    "@heroicons/react": "^2.1.1",
-    "@radix-ui/react-alert-dialog": "^1.1.2",
+    "@supabase/supabase-js": "^2.81.1",
     "axios": "^1.6.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "dotenv": "^17.2.3",
     "i18next": "^23.7.8",
+    "lucide-react": "^0.294.0",
+    "prop-types": "^15.8.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-hot-toast": "^2.6.0",
     "react-i18next": "^13.5.0",
     "react-router-dom": "^6.22.1",
     "recharts": "^2.13.3",
     "tailwind-merge": "^2.5.5"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
     "@vitejs/plugin-react": "^4.2.1",
+    "@vitest/ui": "^4.0.8",
     "autoprefixer": "^10.4.20",
     "eslint": "^8.55.0",
     "eslint-plugin-react": "^7.33.2",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
+    "happy-dom": "^20.0.10",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.15",
-    "vite": "^5.1.4"
+    "vite": "^5.1.4",
+    "vitest": "^4.0.8"
   }
 }

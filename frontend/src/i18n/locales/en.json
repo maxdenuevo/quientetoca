@@ -1,11 +1,11 @@
 {
   "home": {
     "hero": {
-      "subtitle": "Modern Secret Santa for friends and family",
+      "subtitle": "Who did you get? Easy Secret Santa for friends and family",
       "createButton": "Create New Group"
     },
     "features": {
-      "title": "Features",
+      "title": "Why use quienteto.ca?",
       "secret": {
         "title": "Secret Matches",
         "description": "Automatic and fair matching system"
@@ -41,6 +41,11 @@
   },
   "createGroup": {
     "title": "Create New Group",
+    "groupName": "Group Name",
+    "groupNamePlaceholder": "e.g., Family Christmas 2025",
+    "adminEmail": "Your Email (Admin)",
+    "adminEmailPlaceholder": "your@email.com",
+    "participants": "Participants",
     "namePlaceholder": "Participant Name",
     "emailPlaceholder": "Email Address",
     "addParticipant": "Add Participant",
@@ -53,7 +58,10 @@
     "currency": "Currency",
     "deadline": "Event Date",
     "restrictions": "Matching Restrictions",
-    "manageRestrictions": "Manage Restrictions"
+    "manageRestrictions": "Manage Restrictions",
+    "createButton": "Create Group",
+    "matchingError": "Could not generate valid matches. Try adjusting restrictions.",
+    "generalError": "An error occurred. Please try again."
   },
   "participantView": {
     "yourMatch": "Your Secret Santa Match",
@@ -80,10 +88,47 @@
       "title": "Event Details",
       "when": "When",
       "priceRange": "Price Range"
+    },
+    "error": {
+      "title": "Error Loading Group",
+      "noToken": "Access Denied",
+      "tokenRequired": "Admin token required to access this page.",
+      "invalidToken": "Invalid admin token or group not found."
     }
+  },
+  "header": {
+    "createGroup": "Create Group",
+    "toggleTheme": "Toggle theme",
+    "toggleLanguage": "Toggle language"
+  },
+  "restrictions": {
+    "info": "Restrictions prevent specific pairs from being matched together. Useful for couples, family members, or anyone who shouldn't exchange gifts.",
+    "addNew": "Add New Restriction",
+    "person1": "Person 1",
+    "person2": "Person 2",
+    "selectParticipant": "Select a participant...",
+    "addButton": "Add Restriction",
+    "current": "Current Restrictions",
+    "empty": "No restrictions added yet",
+    "selectBothParticipants": "Please select both participants",
+    "cannotRestrictSelf": "A person cannot be restricted from themselves",
+    "alreadyExists": "This restriction already exists",
+    "added": "Restriction added successfully"
+  },
+  "footer": {
+    "about": "About quienteto.ca",
+    "description": "A modern, open-source Secret Santa app for organizing gift exchanges with friends and family.",
+    "madeWith": "Made with",
+    "links": "Quick Links",
+    "sourceCode": "Source Code",
+    "contact": "Contact",
+    "createdBy": "Created By",
+    "languages": "Languages",
+    "copyright": "Open source under MIT License."
   },
   "common": {
     "locale": "en-US",
-    "done": "Done"
+    "done": "Done",
+    "loading": "Loading..."
   }
 }

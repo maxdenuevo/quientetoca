@@ -1,89 +1,138 @@
 {
   "home": {
     "hero": {
-      "subtitle": "Amigo Secreto moderno para amigos y familia",
-      "createButton": "Crear Nuevo Grupo"
+      "subtitle": "¿Quién te tocó? La forma más fácil de organizar tu amigo secreto",
+      "createButton": "Crear Mi Grupo"
     },
     "features": {
-      "title": "Características",
+      "title": "¿Por qué usar quienteto.ca?",
       "secret": {
-        "title": "Coincidencias Secretas",
-        "description": "Sistema automático y justo de emparejamiento"
+        "title": "Sorteo Automático",
+        "description": "Nosotros hacemos el sorteo por ti, sin trampas ni papelitos"
       },
       "groups": {
-        "title": "Gestión de Grupos",
-        "description": "Organiza hasta 20 participantes fácilmente"
+        "title": "Para Cualquier Grupo",
+        "description": "Desde tu familia hasta la oficina, hasta 20 personas"
       },
       "restrictions": {
-        "title": "Restricciones Personalizadas",
-        "description": "Establece reglas de emparejamiento para parejas y familias"
+        "title": "Sin Dramas",
+        "description": "¿Parejas? ¿Familiares? Los separamos automáticamente"
       },
       "bilingual": {
-        "title": "Soporte Bilingüe",
-        "description": "Soporte completo en inglés y español"
+        "title": "En Tu Idioma",
+        "description": "En español o inglés, como prefieras"
       }
     },
     "howItWorks": {
-      "title": "Cómo Funciona",
+      "title": "Súper Simple",
       "step1": {
-        "title": "Crea un Grupo",
-        "description": "Añade participantes y configura tus preferencias"
+        "title": "Crea tu Grupo",
+        "description": "Agrega los nombres y mails de todos los participantes"
       },
       "step2": {
-        "title": "Comparte el Enlace",
-        "description": "Cada participante recibe un enlace único"
+        "title": "Comparte los Links",
+        "description": "Cada uno recibe su link personal por mail o WhatsApp"
       },
       "step3": {
-        "title": "Intercambio de Regalos",
-        "description": "Reúnanse y celebren juntos"
+        "title": "¡Listo!",
+        "description": "Cada persona ve a quién le toca regalarle y puede agregar su wishlist"
       }
     }
   },
   "createGroup": {
-    "title": "Crear Nuevo Grupo",
-    "namePlaceholder": "Nombre del Participante",
-    "emailPlaceholder": "Correo Electrónico",
-    "addParticipant": "Añadir Participante",
-    "removeParticipant": "Eliminar",
-    "minTwoParticipants": "Se requieren al menos dos participantes",
-    "maxParticipantsReached": "Número máximo de participantes alcanzado",
-    "unnamedParticipant": "Participante Sin Nombre",
-    "minPrice": "Precio Mínimo",
-    "maxPrice": "Precio Máximo",
+    "title": "Detalles del Grupo",
+    "groupName": "Nombre del Grupo",
+    "groupNamePlaceholder": "ej., Navidad Familiar 2025",
+    "adminEmail": "Tu Email",
+    "adminEmailPlaceholder": "tucorreo@gmail.com",
+    "participants": "¿Quiénes Participan?",
+    "namePlaceholder": "Nombre",
+    "emailPlaceholder": "mail@ejemplo.cl",
+    "addParticipant": "Agregar Persona",
+    "removeParticipant": "Quitar",
+    "minTwoParticipants": "Necesitas al menos 2 personas para jugar",
+    "maxParticipantsReached": "Máximo 20 personas por grupo",
+    "unnamedParticipant": "Sin Nombre",
+    "priceRange": "Rango de Precios",
+    "minPrice": "Desde",
+    "maxPrice": "Hasta",
     "currency": "Moneda",
-    "deadline": "Fecha del Evento",
-    "restrictions": "Restricciones de Emparejamiento",
-    "manageRestrictions": "Gestionar Restricciones"
+    "deadline": "¿Cuándo es el Evento?",
+    "restrictions": "Restricciones",
+    "manageRestrictions": "¿Hay parejas o familiares?",
+    "createButton": "Crear Grupo y Sortear",
+    "matchingError": "No pudimos hacer el sorteo con estas restricciones. Intenta con menos restricciones.",
+    "generalError": "Algo salió mal. Intenta de nuevo."
   },
   "participantView": {
-    "yourMatch": "Tu Amigo Secreto",
-    "buyingGiftFor": "Comprarás un regalo para:",
-    "eventDetails": "Detalles del Evento",
-    "eventDate": "Fecha del Evento",
-    "priceRange": "Rango de Precio",
-    "matchWishlist": "Lista de Deseos de tu Amigo",
-    "yourWishlist": "Tu Lista de Deseos",
-    "wishlistPlaceholder": "Añade una idea de regalo...",
-    "addItem": "Añadir",
-    "emptyWishlist": "Tu lista de deseos está vacía. ¡Añade algunas ideas de regalo!"
-  },
-  "groupDashboard": {
-    "title": "Panel del Grupo",
-    "participants": "Participantes",
-    "daysRemaining": "días restantes",
-    "priceRange": {
-      "title": "Votación de Rango de Precio"
-    },
-    "wishlistSubmitted": "Lista Añadida",
-    "wishlistPending": "Pendiente",
-    "eventDetails": {
-      "title": "Detalles del Evento",
-      "when": "Cuándo",
-      "priceRange": "Rango de Precio"
+    "yourMatch": "¡Ya Tienes Tu Match!",
+    "buyingGiftFor": "Le toca regalarle a:",
+    "eventDetails": "Detalles",
+    "eventDate": "Fecha",
+    "priceRange": "Presupuesto",
+    "matchWishlist": "Su Wishlist",
+    "yourWishlist": "Tu Wishlist",
+    "wishlistPlaceholder": "Agrega algo que te gustaría recibir...",
+    "addItem": "Agregar",
+    "emptyWishlist": "Aún no tienes nada en tu wishlist. ¡Agrega ideas para que sepan qué regalarte!",
+    "error": {
+      "title": "Oops, algo salió mal"
     }
   },
+  "groupDashboard": {
+    "title": "Tu Grupo",
+    "participants": "Participantes",
+    "daysRemaining": "días para el evento",
+    "priceRange": {
+      "title": "Presupuesto"
+    },
+    "wishlistSubmitted": "Wishlist Lista",
+    "wishlistPending": "Falta Wishlist",
+    "eventDetails": {
+      "title": "Info del Evento",
+      "when": "Cuándo",
+      "priceRange": "Presupuesto"
+    },
+    "error": {
+      "title": "No pudimos cargar el grupo",
+      "noToken": "No tienes acceso",
+      "tokenRequired": "Necesitas el link de administrador para ver esta página.",
+      "invalidToken": "El link no es válido o el grupo no existe."
+    }
+  },
+  "header": {
+    "createGroup": "Crear Grupo",
+    "toggleTheme": "Cambiar tema",
+    "toggleLanguage": "Cambiar idioma"
+  },
+  "restrictions": {
+    "info": "Si hay parejas o familiares que NO deberían regalarse entre ellos, márcalos acá.",
+    "addNew": "Agregar Restricción",
+    "person1": "Persona 1",
+    "person2": "Persona 2",
+    "selectParticipant": "Elige una persona...",
+    "addButton": "Agregar",
+    "current": "restricciones",
+    "empty": "No hay restricciones todavía",
+    "selectBothParticipants": "Tienes que elegir a 2 personas",
+    "cannotRestrictSelf": "Una persona no puede restringirse a sí misma",
+    "alreadyExists": "Ya agregaste esa restricción",
+    "added": "Restricción agregada"
+  },
+  "footer": {
+    "about": "Sobre quienteto.ca",
+    "description": "La forma más simple de organizar tu amigo secreto. Gratis, sin cuentas, sin dramas.",
+    "madeWith": "Hecho con",
+    "links": "Links",
+    "sourceCode": "Código",
+    "contact": "Contacto",
+    "createdBy": "Creado Por",
+    "languages": "Idioma",
+    "copyright": "Open source con Licencia MIT."
+  },
   "common": {
-    "locale": "es-ES",
-    "done": "Listo"
+    "locale": "es-CL",
+    "done": "Listo",
+    "loading": "Cargando..."
   }
 }
