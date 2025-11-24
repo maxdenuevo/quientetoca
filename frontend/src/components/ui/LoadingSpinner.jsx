@@ -1,9 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Gift } from 'lucide-react';
+import { IconGift } from '../../lib/icons';
 
 /**
- * LoadingSpinner - Reusable loading indicator with neobrutalist styling
+ * LoadingSpinner - Reusable loading indicator with Soft UI styling
  *
  * @param {Object} props
  * @param {string} [props.size='md'] - Size of the spinner: 'sm', 'md', 'lg'
@@ -39,14 +39,13 @@ function LoadingSpinner({
       <div className="relative">
         {/* Rotating border */}
         <div
-          className={`${sizeClasses[size]} rounded-brutal border-brutal border-christmas-red animate-spin`}
+          className={`${sizeClasses[size]} rounded-soft-lg border-2 border-brand-terracota animate-spin`}
           aria-hidden="true"
         />
         {/* Centered Gift Icon */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <Gift
-            className={`${iconSizes[size]} text-christmas-red animate-pulse`}
-            strokeWidth={2.5}
+          <IconGift
+            className={`${iconSizes[size]} text-brand-terracota animate-pulse`}
             aria-hidden="true"
           />
         </div>
@@ -54,7 +53,7 @@ function LoadingSpinner({
 
       {/* Loading Message */}
       {message && (
-        <p className="text-lg font-bold text-gray-700 dark:text-gray-300 animate-pulse">
+        <p className="text-lg font-medium text-brand-carbon dark:text-dark-text-primary animate-pulse">
           {message}
         </p>
       )}
@@ -63,7 +62,7 @@ function LoadingSpinner({
 
   if (fullScreen) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen bg-brand-marfil dark:bg-dark-bg">
         {spinner}
       </div>
     );

@@ -14,21 +14,18 @@
     "import-test": "node scripts/import-test-group.js"
   },
   "dependencies": {
+    "@remixicon/react": "^4.7.0",
     "@supabase/supabase-js": "^2.81.1",
     "axios": "^1.6.2",
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
     "dotenv": "^17.2.3",
-    "i18next": "^23.7.8",
-    "lucide-react": "^0.294.0",
     "prop-types": "^15.8.1",
     "react": "^18.2.0",
+    "react-datepicker": "^8.9.0",
     "react-dom": "^18.2.0",
     "react-hot-toast": "^2.6.0",
-    "react-i18next": "^13.5.0",
     "react-router-dom": "^6.22.1",
-    "recharts": "^2.13.3",
-    "tailwind-merge": "^2.5.5"
+    "recharts": "^2.13.3"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.9.1",

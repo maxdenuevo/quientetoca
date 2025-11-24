@@ -1,6 +1,5 @@
 import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
-import { useTranslation } from 'react-i18next';
 import { PieChart, Pie, Cell, Legend, Tooltip, ResponsiveContainer } from 'recharts';
 
 const COLORS = ['#8b5cf6', '#6366f1', '#ec4899', '#f43f5e', '#f59e0b'];
@@ -22,20 +21,37 @@ const CustomTooltip = ({ active, payload }) => {
   return null;
 };
 
-function PriceRangePieChart({ votes }) {
-  const { t } = useTranslation();
-
+function PriceRangePieChart({ votes = [] }) {
   // Process votes data for the chart
   const chartData = useMemo(() => {
+    if (!votes || votes.length === 0) {
+      return [];
+    }
+
     const totalVotes = votes.reduce((sum, range) => sum + range.count, 0);
+
+    if (totalVotes === 0) {
+      return [];
+    }
 
     return votes.map(range => ({
       name: `${range.min} - ${range.max} ${range.currency}`,
       value: (range.count / totalVotes) * 100,
       count: range.count,
-      votes: t('priceRange.votes')
+      votes: 'votos'
     }));
-  }, [votes, t]);
+  }, [votes]);
+
+  // Show empty state if no data
+  if (chartData.length === 0) {
+    return (
+      <div className="w-full h-80 flex items-center justify-center">
+        <p className="text-gray-500 dark:text-gray-400 text-sm">
+          No hay votos aún
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full h-80">

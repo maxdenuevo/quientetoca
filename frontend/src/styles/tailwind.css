@@ -1,21 +1,24 @@
+/* React DatePicker Styles */
+@import 'react-datepicker/dist/react-datepicker.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  font-family: 'Space Grotesk', Inter, system-ui, sans-serif;
+  font-family: 'DM Sans', Inter, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 @layer base {
   body {
-    @apply bg-white dark:bg-christmas-black text-christmas-black dark:text-white;
+    @apply bg-brand-marfil dark:bg-dark-bg text-brand-carbon dark:text-dark-text-primary;
     @apply min-h-screen w-full;
   }
 
   h1 {
-    @apply text-3xl md:text-4xl lg:text-5xl font-bold;
+    @apply text-3xl md:text-4xl lg:text-5xl font-bold leading-tight;
   }
 
   h2 {
@@ -27,19 +30,14 @@
   }
 
   a {
-    @apply text-christmas-red dark:text-christmas-green hover:text-christmas-green dark:hover:text-christmas-red;
+    @apply text-brand-terracota dark:text-brand-terracota-light;
+    @apply hover:text-brand-terracota-dark dark:hover:text-brand-terracota;
     @apply transition-colors duration-200;
   }
 
+  /* Reset button styles - los componentes Button manejan sus propios estilos */
   button {
-    @apply px-4 py-2 rounded-brutal;
-    @apply bg-christmas-red text-white font-semibold;
-    @apply border-brutal border-black;
-    @apply shadow-brutal;
-    @apply hover:shadow-brutal-lg hover:translate-x-[2px] hover:translate-y-[2px];
-    @apply active:shadow-none active:translate-x-1 active:translate-y-1;
-    @apply focus:outline-none focus:ring-2 focus:ring-christmas-red focus:ring-offset-2;
-    @apply disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-brutal disabled:hover:translate-x-0 disabled:hover:translate-y-0;
+    @apply font-medium;
     @apply transition-all duration-200;
   }
 }
@@ -53,44 +51,48 @@
 }
 
 @layer utilities {
-  /* Christmas gradient for logo/headings */
-  .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-christmas-red via-christmas-green to-christmas-yellow;
+  /* Soft UI card utility */
+  .card-soft {
+    @apply bg-brand-marfil dark:bg-dark-surface;
+    @apply border border-brand-arena dark:border-dark-border;
+    @apply rounded-soft-lg;
   }
 
-  /* Neobrutalist card utility */
-  .card-brutal {
-    @apply bg-white dark:bg-christmas-black;
-    @apply border-brutal border-black dark:border-white;
-    @apply rounded-brutal-lg;
-    @apply shadow-brutal;
-  }
-
-  /* Input brutalist style */
-  .input-brutal {
-    @apply w-full px-4 py-2;
-    @apply border-brutal border-black dark:border-white;
-    @apply rounded-brutal;
-    @apply bg-white dark:bg-gray-900 text-christmas-black dark:text-white;
-    @apply focus:outline-none focus:ring-2 focus:ring-christmas-red;
+  /* Soft UI input style */
+  .input-soft {
+    @apply w-full px-4 py-3;
+    @apply border border-brand-arena dark:border-dark-border;
+    @apply rounded-soft;
+    @apply bg-brand-marfil dark:bg-dark-surface;
+    @apply text-brand-carbon dark:text-dark-text-primary;
+    @apply placeholder-accent-piedra dark:placeholder-dark-text-secondary;
+    @apply focus:outline-none focus:border-brand-terracota dark:focus:border-brand-terracota-light;
+    @apply focus:ring-2 focus:ring-brand-terracota/20 dark:focus:ring-brand-terracota-light/20;
     @apply transition-all duration-200;
   }
 
-  /* Button variants */
+  /* Legacy utilities (para migración gradual) */
+  .card-brutal {
+    @apply card-soft;
+  }
+
+  .input-brutal {
+    @apply input-soft;
+  }
+
   .btn-primary {
-    @apply bg-christmas-red hover:bg-red-600 dark:hover:bg-red-500;
+    @apply bg-brand-terracota hover:bg-brand-terracota-dark text-white;
   }
 
   .btn-secondary {
-    @apply bg-christmas-green hover:bg-green-600 dark:hover:bg-green-400 text-christmas-black;
-  }
-
-  .btn-accent {
-    @apply bg-christmas-yellow hover:bg-yellow-500 text-christmas-black;
+    @apply bg-brand-arena dark:bg-dark-surface;
+    @apply text-brand-carbon dark:text-dark-text-primary;
+    @apply hover:shadow-soft;
   }
 
   .btn-outline {
-    @apply bg-white dark:bg-christmas-black text-christmas-black dark:text-white;
-    @apply hover:bg-gray-100 dark:hover:bg-gray-900;
+    @apply bg-transparent border border-brand-arena dark:border-dark-border;
+    @apply text-brand-carbon dark:text-dark-text-primary;
+    @apply hover:bg-brand-arena/50 dark:hover:bg-dark-surface;
   }
 }

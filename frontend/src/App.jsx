@@ -1,17 +1,16 @@
 import { RouterProvider } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { ThemeProvider } from './context/ThemeContext';
-import { LanguageProvider } from './context/LanguageContext';
+import { AuthProvider } from './components/auth/AuthProvider';
 import ErrorBoundary from './components/ErrorBoundary';
 import { router } from './router';
-import './i18n/config';
 import './styles/tailwind.css';
 
 export default function App() {
   return (
     <ErrorBoundary>
       <ThemeProvider>
-        <LanguageProvider>
+        <AuthProvider>
           <RouterProvider router={router} />
           <Toaster
             position="top-center"
@@ -37,7 +36,7 @@ export default function App() {
               },
             }}
           />
-        </LanguageProvider>
+        </AuthProvider>
       </ThemeProvider>
     </ErrorBoundary>
   );

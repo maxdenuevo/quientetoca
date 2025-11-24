@@ -1,17 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { X, Plus, AlertCircle, Ban } from 'lucide-react';
+import { IconClose, IconPlus, IconAlert, IconBan, IconUpload, IconChevronDown, IconLoader } from '../../lib/icons';
 import { MatchingService } from '../../utils/matching';
-import { useGroupData } from '../../hooks/useGroupData';
+import { apiClient } from '../../lib/api-client';
 import { validateGroup } from '../../utils/validation';
-import RestrictionModal from './RestrictionModal';
+import { formatPriceInput, parsePriceInput } from '../../utils/formatters';
+import ChileanDatePicker from '../ui/ChileanDatePicker';
+import { CSVParser } from '../../utils/csvParser';
+import { Card, Button, Input } from '../ui';
 
 const CreateGroupForm = () => {
-  const { t } = useTranslation();
   const navigate = useNavigate();
-  const { createGroup, loading, error } = useGroupData();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const fileInputRef = useRef(null);
 
   // Group details state
   const [groupName, setGroupName] = useState('');
@@ -24,17 +27,28 @@ const CreateGroupForm = () => {
   ]);
   const [restrictions, setRestrictions] = useState([]);
   const [priceRange, setPriceRange] = useState({
-    min: '',
-    max: '',
-    currency: 'USD'
+    min: '10000',
+    max: '20000'
   });
-  const [deadline, setDeadline] = useState('');
-  const [showRestrictionModal, setShowRestrictionModal] = useState(false);
+  const [deadline, setDeadline] = useState(null);
+  // Track which participants have expanded restrictions
+  const [expandedRestrictions, setExpandedRestrictions] = useState(new Set());
+
+  // Handle price increment/decrement with arrow keys
+  const handlePriceKeyDown = (e, field) => {
+    if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      const currentValue = parseInt(priceRange[field]) || 0;
+      const step = 1000;
+      const newValue = e.key === 'ArrowUp' ? currentValue + step : Math.max(0, currentValue - step);
+      setPriceRange({ ...priceRange, [field]: newValue.toString() });
+    }
+  };
 
   // Add a new participant to the group
   const addParticipant = () => {
     if (participants.length >= 20) {
-      toast.error(t('createGroup.maxParticipantsReached'));
+      toast.error('Máximo 20 personas por grupo');
       return;
     }
     const newId = Math.max(...participants.map(p => p.id)) + 1;
@@ -44,7 +58,7 @@ const CreateGroupForm = () => {
   // Remove a participant and their associated restrictions
   const removeParticipant = (id) => {
     if (participants.length <= 2) {
-      toast.error(t('createGroup.minTwoParticipants'));
+      toast.error('Necesitas al menos 2 personas para jugar');
       return;
     }
     setParticipants(participants.filter(p => p.id !== id));
@@ -60,14 +74,131 @@ const CreateGroupForm = () => {
     ));
   };
 
-  // Add a restriction
-  const addRestriction = (restriction) => {
-    setRestrictions([...restrictions, restriction]);
+  // Toggle restriction between two participants
+  const toggleRestriction = (participantId, targetId) => {
+    const hasRestriction = restrictions.some(
+      r => (r.participant1Id === participantId && r.participant2Id === targetId)
+    );
+
+    if (hasRestriction) {
+      // Remove restriction (both directions)
+      setRestrictions(restrictions.filter(r =>
+        !(r.participant1Id === participantId && r.participant2Id === targetId) &&
+        !(r.participant1Id === targetId && r.participant2Id === participantId)
+      ));
+    } else {
+      // Add restriction (both directions)
+      setRestrictions([
+        ...restrictions,
+        { participant1Id: participantId, participant2Id: targetId },
+        { participant1Id: targetId, participant2Id: participantId }
+      ]);
+    }
   };
 
-  // Remove a restriction by index
-  const removeRestriction = (index) => {
-    setRestrictions(restrictions.filter((_, i) => i !== index));
+  // Check if participant has restriction with target
+  const hasRestriction = (participantId, targetId) => {
+    return restrictions.some(
+      r => (r.participant1Id === participantId && r.participant2Id === targetId)
+    );
+  };
+
+  // Get restricted participants for a given participant (unique list)
+  const getRestrictedFor = (participantId) => {
+    const restrictedIds = new Set(
+      restrictions
+        .filter(r => r.participant1Id === participantId)
+        .map(r => r.participant2Id)
+    );
+
+    return Array.from(restrictedIds)
+      .map(id => participants.find(p => p.id === id))
+      .filter(Boolean);
+  };
+
+  // Toggle restrictions section expansion
+  const toggleRestrictionsExpanded = (participantId) => {
+    setExpandedRestrictions(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(participantId)) {
+        newSet.delete(participantId);
+      } else {
+        newSet.add(participantId);
+      }
+      return newSet;
+    });
+  };
+
+  // Handle CSV file selection
+  const handleCSVUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file
+    const validation = await CSVParser.validateFile(file);
+    if (!validation.valid) {
+      toast.error(validation.error);
+      return;
+    }
+
+    // Read file
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const csvText = event.target?.result;
+      if (typeof csvText !== 'string') return;
+
+      // Parse CSV
+      const result = CSVParser.parse(csvText);
+
+      // Show errors if any
+      if (result.errors.length > 0) {
+        result.errors.forEach(error => toast.error(error));
+        if (result.participants.length === 0) return;
+      }
+
+      // Generate new IDs for imported participants
+      const maxId = participants.length > 0
+        ? Math.max(...participants.map(p => p.id))
+        : 0;
+
+      const importedParticipants = result.participants.map((p, index) => ({
+        ...p,
+        id: maxId + index + 1
+      }));
+
+      // Map restrictions to new IDs
+      const idMapping = new Map();
+      result.participants.forEach((p, index) => {
+        idMapping.set(p.id, maxId + index + 1);
+      });
+
+      const importedRestrictions = result.restrictions.map(r => ({
+        participant1Id: idMapping.get(r.participant1Id),
+        participant2Id: idMapping.get(r.participant2Id)
+      }));
+
+      // Update state
+      setParticipants(importedParticipants);
+      setRestrictions(importedRestrictions);
+
+      toast.success(`${importedParticipants.length} participantes importados`);
+    };
+
+    reader.onerror = () => {
+      toast.error('Error al leer el archivo');
+    };
+
+    reader.readAsText(file);
+
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  // Trigger file input click
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
   };
 
   // Handle form submission
@@ -80,8 +211,11 @@ const CreateGroupForm = () => {
         adminEmail: adminEmail,
         participants,
         restrictions,
-        priceRange,
-        deadline
+        priceRange: {
+          ...priceRange,
+          currency: 'CLP'
+        },
+        deadline: deadline ? deadline.toISOString().split('T')[0] : ''
       };
 
       const validation = validateGroup(groupData);
@@ -91,222 +225,257 @@ const CreateGroupForm = () => {
       }
 
       const matches = MatchingService.generateMatches(participants, restrictions);
-      
+
       if (!MatchingService.validateMatching(matches, participants, restrictions)) {
-        throw new Error(t('createGroup.matchingError'));
+        throw new Error('No pudimos hacer el sorteo con estas restricciones. Intenta con menos restricciones.');
       }
 
-      const result = await createGroup({
+      setLoading(true);
+      setError(null);
+
+      const result = await apiClient.createGroup({
         ...groupData,
         matches: Array.from(matches.entries())
       });
 
-      toast.success('Group created successfully!');
+      toast.success('¡Grupo creado exitosamente!');
       navigate(`/group/${result.id}/${result.admin_token}`);
 
     } catch (err) {
-      toast.error(err.message || t('createGroup.generalError'));
+      setError(err.message);
+      toast.error(err.message || 'Algo salió mal. Intenta de nuevo.');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <form onSubmit={handleSubmit} className="max-w-4xl mx-auto space-y-8 pb-12">
       {/* Group Details Section */}
-      <div className="card-brutal p-6 space-y-4 hover:shadow-brutal-lg transition-shadow">
-        <h2 className="text-2xl font-bold">
-          {t('createGroup.title')}
-        </h2>
-
-        <div>
-          <label className="block text-sm font-bold mb-2">
-            {t('createGroup.groupName')} *
-          </label>
-          <input
+      <Card padding="lg">
+        <Card.Header>
+          <Card.Title>Detalles del Grupo</Card.Title>
+        </Card.Header>
+        <Card.Body className="space-y-4">
+          <Input
+            label="Nombre del Grupo *"
             type="text"
             value={groupName}
             onChange={(e) => setGroupName(e.target.value)}
-            placeholder={t('createGroup.groupNamePlaceholder')}
+            placeholder="ej., Navidad Familiar 2025"
             required
-            className="input-brutal"
           />
-        </div>
-
-        <div>
-          <label className="block text-sm font-bold mb-2">
-            {t('createGroup.adminEmail')} *
-          </label>
-          <input
+          <Input
+            label="Tu Email *"
             type="email"
             value={adminEmail}
             onChange={(e) => setAdminEmail(e.target.value)}
-            placeholder={t('createGroup.adminEmailPlaceholder')}
+            placeholder="tucorreo@gmail.com"
             required
-            className="input-brutal"
           />
-        </div>
-      </div>
+        </Card.Body>
+      </Card>
 
       {/* Participants Section */}
-      <div className="card-brutal p-6 space-y-6 hover:shadow-brutal-lg transition-shadow">
-        <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold">
-            {t('createGroup.participants')}
-          </h2>
-          <button
-            type="button"
-            onClick={addParticipant}
-            className="btn-secondary flex items-center px-4 py-2 text-sm"
-          >
-            <Plus className="w-4 h-4 mr-1" strokeWidth={2.5} />
-            {t('createGroup.addParticipant')}
-          </button>
-        </div>
+      <Card padding="lg">
+        <Card.Header className="flex justify-between items-center flex-wrap gap-2">
+          <Card.Title>¿Quiénes Participan?</Card.Title>
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              icon={IconUpload}
+              onClick={handleImportClick}
+            >
+              Importar CSV
+            </Button>
+            <Button
+              type="button"
+              variant="primary"
+              size="sm"
+              icon={IconPlus}
+              onClick={addParticipant}
+            >
+              Agregar Persona
+            </Button>
+          </div>
+        </Card.Header>
 
-        <div className="space-y-4">
+        <Card.Body>
+          {/* Hidden file input */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".csv"
+            onChange={handleCSVUpload}
+            className="hidden"
+          />
+
+          <div className="space-y-4">
           {participants.map((participant) => (
-            <div key={participant.id} className="flex gap-4 items-start">
-              <div className="flex-1">
-                <input
-                  type="text"
-                  value={participant.name}
-                  onChange={(e) => updateParticipant(participant.id, 'name', e.target.value)}
-                  placeholder={t('createGroup.namePlaceholder')}
-                  className="input-brutal"
+            <div key={participant.id} className="space-y-2">
+              <div className="flex gap-4 items-start">
+                <div className="flex-1">
+                  <Input
+                    type="text"
+                    value={participant.name}
+                    onChange={(e) => updateParticipant(participant.id, 'name', e.target.value)}
+                    placeholder="Nombre"
+                  />
+                </div>
+                <div className="flex-1">
+                  <Input
+                    type="email"
+                    value={participant.email}
+                    onChange={(e) => updateParticipant(participant.id, 'email', e.target.value)}
+                    placeholder="mail@ejemplo.cl"
+                  />
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  icon={IconClose}
+                  onClick={() => removeParticipant(participant.id)}
+                  aria-label="Quitar participante"
+                  className="hover:bg-red-100 dark:hover:bg-red-900 hover:text-red-500"
                 />
               </div>
-              <div className="flex-1">
-                <input
-                  type="email"
-                  value={participant.email}
-                  onChange={(e) => updateParticipant(participant.id, 'email', e.target.value)}
-                  placeholder={t('createGroup.emailPlaceholder')}
-                  className="input-brutal"
-                />
-              </div>
-              <button
-                type="button"
-                onClick={() => removeParticipant(participant.id)}
-                className="p-2 rounded-brutal border-2 border-black dark:border-white bg-white dark:bg-christmas-black hover:bg-red-100 dark:hover:bg-red-900 text-christmas-black dark:text-white transition-colors"
-                aria-label={t('createGroup.removeParticipant')}
-              >
-                <X className="w-5 h-5" strokeWidth={2.5} />
-              </button>
+
+              {/* Collapsible Restrictions with Badges */}
+              {participants.filter(p => p.id !== participant.id && p.name).length > 0 && (
+                <div className="ml-4">
+                  {/* Toggle button with count */}
+                  <button
+                    type="button"
+                    onClick={() => toggleRestrictionsExpanded(participant.id)}
+                    className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 p-2 rounded transition-colors"
+                  >
+                    <IconBan className="w-4 h-4" />
+                    <span>
+                      {getRestrictedFor(participant.id).length > 0
+                        ? `${getRestrictedFor(participant.id).length} ${getRestrictedFor(participant.id).length === 1 ? 'restricción' : 'restricciones'}`
+                        : 'Sin restricciones'}
+                    </span>
+                    <IconChevronDown
+                      className={`w-4 h-4 transition-transform ${expandedRestrictions.has(participant.id) ? 'rotate-180' : ''}`}
+                    />
+                  </button>
+
+                  {/* Badges - Always visible if there are restrictions */}
+                  {getRestrictedFor(participant.id).length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {getRestrictedFor(participant.id).map(restricted => (
+                        <button
+                          key={restricted.id}
+                          type="button"
+                          onClick={() => toggleRestriction(participant.id, restricted.id)}
+                          className="inline-flex items-center gap-1 px-2 py-1 bg-accent-burdeos text-white rounded-soft text-xs font-medium hover:bg-accent-burdeos/80 transition-colors"
+                        >
+                          {restricted.name}
+                          <IconClose className="w-3 h-3" />
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Checkboxes - Only visible when expanded */}
+                  {expandedRestrictions.has(participant.id) && (
+                    <div className="mt-3 p-3 bg-brand-arena/30 dark:bg-dark-surface rounded-soft-lg border border-dashed border-brand-arena dark:border-dark-border space-y-2">
+                      {participants
+                        .filter(p => p.id !== participant.id && p.name)
+                        .map(p => (
+                          <label
+                            key={p.id}
+                            className="flex items-center gap-2 cursor-pointer hover:bg-brand-arena/50 dark:hover:bg-dark-surface-hover p-2 rounded-soft transition-colors"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={hasRestriction(participant.id, p.id)}
+                              onChange={() => toggleRestriction(participant.id, p.id)}
+                              className="w-4 h-4 rounded border border-brand-arena dark:border-dark-border text-brand-terracota focus:ring-2 focus:ring-brand-terracota/20"
+                            />
+                            <span className="text-sm font-medium text-brand-carbon dark:text-dark-text-primary">
+                              {p.name}
+                            </span>
+                          </label>
+                        ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           ))}
-        </div>
-      </div>
+          </div>
+        </Card.Body>
+      </Card>
 
       {/* Price Range Section */}
-      <div className="card-brutal p-6 hover:shadow-brutal-lg transition-shadow">
-        <h3 className="text-xl font-bold mb-4">{t('createGroup.priceRange')}</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-sm font-bold mb-2">
-              {t('createGroup.minPrice')}
-            </label>
-            <input
-              type="number"
-              value={priceRange.min}
-              onChange={(e) => setPriceRange({ ...priceRange, min: e.target.value })}
-              className="input-brutal"
+      <Card padding="lg">
+        <Card.Header>
+          <Card.Title>Rango de Precios</Card.Title>
+        </Card.Header>
+        <Card.Body>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Input
+              label="Desde"
+              type="text"
+              value={formatPriceInput(priceRange.min)}
+              onChange={(e) => setPriceRange({ ...priceRange, min: parsePriceInput(e.target.value) })}
+              onKeyDown={(e) => handlePriceKeyDown(e, 'min')}
+              placeholder="10.000"
+            />
+            <Input
+              label="Hasta"
+              type="text"
+              value={formatPriceInput(priceRange.max)}
+              onChange={(e) => setPriceRange({ ...priceRange, max: parsePriceInput(e.target.value) })}
+              onKeyDown={(e) => handlePriceKeyDown(e, 'max')}
+              placeholder="20.000"
             />
           </div>
-          <div>
-            <label className="block text-sm font-bold mb-2">
-              {t('createGroup.maxPrice')}
-            </label>
-            <input
-              type="number"
-              value={priceRange.max}
-              onChange={(e) => setPriceRange({ ...priceRange, max: e.target.value })}
-              className="input-brutal"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-bold mb-2">
-              {t('createGroup.currency')}
-            </label>
-            <select
-              value={priceRange.currency}
-              onChange={(e) => setPriceRange({ ...priceRange, currency: e.target.value })}
-              className="input-brutal"
-            >
-              <option value="USD">USD</option>
-              <option value="EUR">EUR</option>
-              <option value="CLP">CLP</option>
-            </select>
-          </div>
-        </div>
-      </div>
+        </Card.Body>
+      </Card>
 
       {/* Deadline Section */}
-      <div className="card-brutal p-6 hover:shadow-brutal-lg transition-shadow">
-        <label className="block text-sm font-bold mb-2">
-          {t('createGroup.deadline')}
-        </label>
-        <input
-          type="datetime-local"
-          value={deadline}
-          onChange={(e) => setDeadline(e.target.value)}
-          className="input-brutal"
-        />
-      </div>
-
-      {/* Restrictions Section */}
-      <div className="card-brutal p-6 space-y-3 hover:shadow-brutal-lg transition-shadow">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-xl font-bold">
-              {t('createGroup.restrictions')}
-            </h3>
-            <p className="text-sm font-medium text-gray-600 dark:text-gray-300 mt-1">
-              {t('restrictions.info')}
-            </p>
-          </div>
-        </div>
-        <button
-          type="button"
-          onClick={() => setShowRestrictionModal(true)}
-          className="flex items-center gap-2 px-4 py-3 border-brutal border-dashed border-black dark:border-white rounded-brutal hover:bg-christmas-yellow hover:border-solid transition-all w-full justify-center font-bold shadow-brutal-sm hover:shadow-brutal"
-        >
-          <Ban className="w-5 h-5" strokeWidth={2.5} />
-          <span>
-            {restrictions.length === 0
-              ? t('createGroup.manageRestrictions')
-              : `${restrictions.length} ${t('restrictions.current')}`}
-          </span>
-        </button>
-      </div>
+      <Card padding="lg">
+        <Card.Header>
+          <Card.Title>¿Cuándo es el Evento?</Card.Title>
+        </Card.Header>
+        <Card.Body>
+          <ChileanDatePicker
+            selected={deadline}
+            onChange={(date) => setDeadline(date)}
+            className="input-brutal w-full"
+            placeholderText="Selecciona una fecha"
+            minDate={new Date()}
+          />
+        </Card.Body>
+      </Card>
 
       {/* Submit Button */}
       <div className="flex justify-end">
-        <button
+        <Button
           type="submit"
+          variant="primary"
+          size="lg"
           disabled={loading}
-          className="btn-primary px-8 py-4 text-lg"
+          loading={loading}
+          icon={loading ? IconLoader : null}
         >
-          {loading ? t('common.loading') : t('createGroup.createButton')}
-        </button>
+          {loading ? 'Cargando...' : 'Crear Grupo y Sortear'}
+        </Button>
       </div>
 
       {error && (
-        <div className="card-brutal p-4 bg-christmas-red/10 border-christmas-red">
-          <div className="flex items-center gap-2 text-christmas-red dark:text-red-400">
-            <AlertCircle className="w-5 h-5" strokeWidth={2.5} />
-            <p className="font-bold">{error}</p>
-          </div>
-        </div>
+        <Card className="bg-accent-burdeos/10 border-accent-burdeos">
+          <Card.Body className="flex items-center gap-2 text-accent-burdeos dark:text-accent-burdeos-light">
+            <IconAlert className="w-5 h-5" />
+            <p className="font-medium">{error}</p>
+          </Card.Body>
+        </Card>
       )}
 
-      {/* Restriction Modal */}
-      <RestrictionModal
-        isOpen={showRestrictionModal}
-        onClose={() => setShowRestrictionModal(false)}
-        participants={participants}
-        restrictions={restrictions}
-        onAddRestriction={addRestriction}
-        onRemoveRestriction={removeRestriction}
-      />
     </form>
   );
 };

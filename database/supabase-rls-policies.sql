@@ -1,17 +1,15 @@
 -- ================================================
--- AMIGIFT - RLS POLICIES ONLY
+-- QUIENTETOCA - ROW LEVEL SECURITY POLICIES v2.0
 -- ================================================
--- Safe to run on existing database
--- Drops and recreates all RLS policies
+-- Run this AFTER supabase-schema.sql
+-- Based on Supabase Auth (auth.uid())
 -- ================================================
-
--- Enable UUID extension (safe to run multiple times)
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- ================================================
 -- ENABLE RLS ON ALL TABLES
 -- ================================================
 
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE groups ENABLE ROW LEVEL SECURITY;
 ALTER TABLE participants ENABLE ROW LEVEL SECURITY;
 ALTER TABLE matches ENABLE ROW LEVEL SECURITY;
@@ -20,177 +18,265 @@ ALTER TABLE restrictions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE price_votes ENABLE ROW LEVEL SECURITY;
 
 -- ================================================
--- DROP EXISTING POLICIES (if any)
+-- USERS POLICIES
 -- ================================================
 
--- Groups policies
-DROP POLICY IF EXISTS "Allow public group creation" ON groups;
-DROP POLICY IF EXISTS "Admin can view their group" ON groups;
-DROP POLICY IF EXISTS "Admin can update their group" ON groups;
+-- Users can read their own profile
+CREATE POLICY "Users can read own profile"
+    ON users FOR SELECT
+    USING (id = auth.uid());
 
--- Participants policies
-DROP POLICY IF EXISTS "Allow participant creation" ON participants;
-DROP POLICY IF EXISTS "Participants can view own data" ON participants;
-DROP POLICY IF EXISTS "Participants can update own data" ON participants;
+-- Users can update their own profile
+CREATE POLICY "Users can update own profile"
+    ON users FOR UPDATE
+    USING (id = auth.uid());
 
--- Matches policies
-DROP POLICY IF EXISTS "Allow match creation" ON matches;
-DROP POLICY IF EXISTS "Participants see own match" ON matches;
+-- Users can insert their own profile (on first login)
+CREATE POLICY "Users can insert own profile"
+    ON users FOR INSERT
+    WITH CHECK (id = auth.uid());
 
--- Wishlist policies
-DROP POLICY IF EXISTS "Create own wishlist items" ON wishlist_items;
-DROP POLICY IF EXISTS "View accessible wishlists" ON wishlist_items;
-DROP POLICY IF EXISTS "Update own wishlist items" ON wishlist_items;
-DROP POLICY IF EXISTS "Delete own wishlist items" ON wishlist_items;
-
--- Restrictions policies
-DROP POLICY IF EXISTS "Allow restriction creation" ON restrictions;
-DROP POLICY IF EXISTS "View group restrictions" ON restrictions;
-
--- Price votes policies
-DROP POLICY IF EXISTS "Create own price vote" ON price_votes;
-DROP POLICY IF EXISTS "View group price votes" ON price_votes;
+-- Allow reading user info for participants in same group
+CREATE POLICY "Users can read group members"
+    ON users FOR SELECT
+    USING (
+        id IN (
+            SELECT p2.user_id FROM participants p1
+            JOIN participants p2 ON p1.group_id = p2.group_id
+            WHERE p1.user_id = auth.uid() AND p1.kicked = FALSE
+        )
+    );
 
 -- ================================================
 -- GROUPS POLICIES
 -- ================================================
 
--- Anyone can create a group (public endpoint)
-CREATE POLICY "Allow public group creation" ON groups
-    FOR INSERT
-    WITH CHECK (true);
+-- Anyone authenticated can create a group
+CREATE POLICY "Authenticated users can create groups"
+    ON groups FOR INSERT
+    WITH CHECK (auth.uid() IS NOT NULL AND organizer_id = auth.uid());
 
--- Anyone with admin_token can view/edit their group
-CREATE POLICY "Admin can view their group" ON groups
-    FOR SELECT
-    USING (true); -- Allow public read for now
+-- Organizers can update their groups
+CREATE POLICY "Organizers can update their groups"
+    ON groups FOR UPDATE
+    USING (organizer_id = auth.uid());
 
-CREATE POLICY "Admin can update their group" ON groups
-    FOR UPDATE
-    USING (true); -- Allow public update for now (can be restricted later)
+-- Public groups can be read by anyone (for join page)
+CREATE POLICY "Public groups are readable"
+    ON groups FOR SELECT
+    USING (is_public = TRUE OR organizer_id = auth.uid());
+
+-- Participants can read their group
+CREATE POLICY "Participants can read their group"
+    ON groups FOR SELECT
+    USING (
+        id IN (
+            SELECT group_id FROM participants
+            WHERE user_id = auth.uid() AND kicked = FALSE
+        )
+    );
 
 -- ================================================
 -- PARTICIPANTS POLICIES
 -- ================================================
 
--- Allow inserting participants when creating a group
-CREATE POLICY "Allow participant creation" ON participants
-    FOR INSERT
-    WITH CHECK (true);
+-- Authenticated users can join groups
+CREATE POLICY "Users can join groups"
+    ON participants FOR INSERT
+    WITH CHECK (
+        auth.uid() IS NOT NULL
+        AND user_id = auth.uid()
+        AND can_join_group(group_id, auth.uid())
+    );
 
--- Participants can view their own data using access_token
-CREATE POLICY "Participants can view own data" ON participants
-    FOR SELECT
-    USING (true); -- Allow public read for now
+-- Participants can read other participants in same group
+CREATE POLICY "Participants can read group members"
+    ON participants FOR SELECT
+    USING (
+        group_id IN (
+            SELECT group_id FROM participants
+            WHERE user_id = auth.uid() AND kicked = FALSE
+        )
+        OR
+        group_id IN (
+            SELECT id FROM groups WHERE organizer_id = auth.uid()
+        )
+    );
 
--- Participants can update their own data
-CREATE POLICY "Participants can update own data" ON participants
-    FOR UPDATE
-    USING (true); -- Allow public update for now
+-- Users can update their own participant record
+CREATE POLICY "Users can update own participant"
+    ON participants FOR UPDATE
+    USING (user_id = auth.uid());
+
+-- Organizers can update participants in their groups (kick)
+CREATE POLICY "Organizers can update participants"
+    ON participants FOR UPDATE
+    USING (
+        group_id IN (
+            SELECT id FROM groups WHERE organizer_id = auth.uid()
+        )
+    );
 
 -- ================================================
 -- MATCHES POLICIES
 -- ================================================
 
--- Only allow match creation during group setup
-CREATE POLICY "Allow match creation" ON matches
-    FOR INSERT
-    WITH CHECK (true);
+-- Service role only can insert matches (Edge Function)
+CREATE POLICY "Service role can insert matches"
+    ON matches FOR INSERT
+    WITH CHECK (TRUE); -- Edge function uses service role
 
--- Participants can only see their own match (who they're giving to)
-CREATE POLICY "Participants see own match" ON matches
-    FOR SELECT
-    USING (true); -- Allow public read for now
+-- Givers can see their own match
+CREATE POLICY "Givers can see their match"
+    ON matches FOR SELECT
+    USING (
+        giver_id IN (
+            SELECT id FROM participants WHERE user_id = auth.uid()
+        )
+    );
+
+-- Organizers can see all matches in their groups
+CREATE POLICY "Organizers can see group matches"
+    ON matches FOR SELECT
+    USING (
+        group_id IN (
+            SELECT id FROM groups WHERE organizer_id = auth.uid()
+        )
+    );
 
 -- ================================================
 -- WISHLIST POLICIES
 -- ================================================
 
--- Participants can create wishlist items for themselves
-CREATE POLICY "Create own wishlist items" ON wishlist_items
-    FOR INSERT
-    WITH CHECK (true); -- Allow public insert for now
+-- Users can create wishlist items for their participant
+CREATE POLICY "Users can create own wishlist"
+    ON wishlist_items FOR INSERT
+    WITH CHECK (
+        participant_id IN (
+            SELECT id FROM participants WHERE user_id = auth.uid()
+        )
+    );
 
--- Participants can view accessible wishlists
-CREATE POLICY "View accessible wishlists" ON wishlist_items
-    FOR SELECT
-    USING (true); -- Allow public read for now
+-- Users can update their own wishlist
+CREATE POLICY "Users can update own wishlist"
+    ON wishlist_items FOR UPDATE
+    USING (
+        participant_id IN (
+            SELECT id FROM participants WHERE user_id = auth.uid()
+        )
+    );
 
--- Participants can update/delete their own wishlist items
-CREATE POLICY "Update own wishlist items" ON wishlist_items
-    FOR UPDATE
-    USING (true); -- Allow public update for now
+-- Users can delete their own wishlist items
+CREATE POLICY "Users can delete own wishlist"
+    ON wishlist_items FOR DELETE
+    USING (
+        participant_id IN (
+            SELECT id FROM participants WHERE user_id = auth.uid()
+        )
+    );
 
-CREATE POLICY "Delete own wishlist items" ON wishlist_items
-    FOR DELETE
-    USING (true); -- Allow public delete for now
+-- Users can see their own wishlist
+CREATE POLICY "Users can read own wishlist"
+    ON wishlist_items FOR SELECT
+    USING (
+        participant_id IN (
+            SELECT id FROM participants WHERE user_id = auth.uid()
+        )
+    );
+
+-- Givers can see their receiver's wishlist
+CREATE POLICY "Givers can see receiver wishlist"
+    ON wishlist_items FOR SELECT
+    USING (
+        participant_id IN (
+            SELECT receiver_id FROM matches
+            WHERE giver_id IN (
+                SELECT id FROM participants WHERE user_id = auth.uid()
+            )
+        )
+    );
+
+-- Organizers can see all wishlists in their groups
+CREATE POLICY "Organizers can see group wishlists"
+    ON wishlist_items FOR SELECT
+    USING (
+        participant_id IN (
+            SELECT p.id FROM participants p
+            JOIN groups g ON p.group_id = g.id
+            WHERE g.organizer_id = auth.uid()
+        )
+    );
 
 -- ================================================
 -- RESTRICTIONS POLICIES
 -- ================================================
 
-CREATE POLICY "Allow restriction creation" ON restrictions
-    FOR INSERT
-    WITH CHECK (true);
+-- Users can create self-restrictions
+CREATE POLICY "Users can create self restrictions"
+    ON restrictions FOR INSERT
+    WITH CHECK (
+        created_by = auth.uid()
+        AND (
+            is_self_imposed = TRUE
+            OR
+            -- Organizers can force restrictions
+            group_id IN (SELECT id FROM groups WHERE organizer_id = auth.uid())
+        )
+    );
 
-CREATE POLICY "View group restrictions" ON restrictions
-    FOR SELECT
-    USING (true);
+-- Users can delete their own self-restrictions
+CREATE POLICY "Users can delete own restrictions"
+    ON restrictions FOR DELETE
+    USING (
+        (created_by = auth.uid() AND is_self_imposed = TRUE)
+        OR
+        -- Organizers can delete any restriction in their group
+        group_id IN (SELECT id FROM groups WHERE organizer_id = auth.uid())
+    );
+
+-- Participants can see restrictions in their group (public restrictions)
+CREATE POLICY "Participants can see group restrictions"
+    ON restrictions FOR SELECT
+    USING (
+        group_id IN (
+            SELECT group_id FROM participants
+            WHERE user_id = auth.uid() AND kicked = FALSE
+        )
+        OR
+        group_id IN (
+            SELECT id FROM groups WHERE organizer_id = auth.uid()
+        )
+    );
 
 -- ================================================
 -- PRICE VOTES POLICIES
 -- ================================================
 
-CREATE POLICY "Create own price vote" ON price_votes
-    FOR INSERT
-    WITH CHECK (true);
+-- Users can create/update their vote
+CREATE POLICY "Users can upsert own vote"
+    ON price_votes FOR INSERT
+    WITH CHECK (user_id = auth.uid());
 
-CREATE POLICY "View group price votes" ON price_votes
-    FOR SELECT
-    USING (true);
+CREATE POLICY "Users can update own vote"
+    ON price_votes FOR UPDATE
+    USING (user_id = auth.uid());
 
--- ================================================
--- FUNCTIONS & TRIGGERS
--- ================================================
-
--- Function to update updated_at timestamp automatically
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_at = NOW();
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
--- Drop existing triggers if they exist
-DROP TRIGGER IF EXISTS update_groups_updated_at ON groups;
-DROP TRIGGER IF EXISTS update_participants_updated_at ON participants;
-DROP TRIGGER IF EXISTS update_wishlist_items_updated_at ON wishlist_items;
-
--- Apply updated_at trigger to relevant tables
-CREATE TRIGGER update_groups_updated_at BEFORE UPDATE ON groups
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_participants_updated_at BEFORE UPDATE ON participants
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_wishlist_items_updated_at BEFORE UPDATE ON wishlist_items
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
--- ================================================
--- INDEXES (safe to create if not exists)
--- ================================================
-
-CREATE INDEX IF NOT EXISTS idx_participants_group_id ON participants(group_id);
-CREATE INDEX IF NOT EXISTS idx_participants_access_token ON participants(access_token);
-CREATE INDEX IF NOT EXISTS idx_matches_group_id ON matches(group_id);
-CREATE INDEX IF NOT EXISTS idx_matches_giver_id ON matches(giver_id);
-CREATE INDEX IF NOT EXISTS idx_wishlist_participant_id ON wishlist_items(participant_id);
-CREATE INDEX IF NOT EXISTS idx_restrictions_group_id ON restrictions(group_id);
-CREATE INDEX IF NOT EXISTS idx_groups_admin_token ON groups(admin_token);
+-- Participants can see votes in their group
+CREATE POLICY "Participants can see group votes"
+    ON price_votes FOR SELECT
+    USING (
+        group_id IN (
+            SELECT group_id FROM participants
+            WHERE user_id = auth.uid() AND kicked = FALSE
+        )
+        OR
+        group_id IN (
+            SELECT id FROM groups WHERE organizer_id = auth.uid()
+        )
+    );
 
 -- ================================================
 -- DONE
 -- ================================================
 
-SELECT 'RLS policies applied successfully!' as status;
+SELECT 'RLS policies v2.0 applied successfully!' as status;

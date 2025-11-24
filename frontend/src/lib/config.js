@@ -29,35 +29,41 @@ export const config = {
   },
 };
 
-// Validate configuration
+// Validate configuration (runs in all environments)
 export const validateConfig = () => {
   const { backendMode, supabase, apiUrl } = config;
+  const isDev = import.meta.env.DEV;
 
   if (backendMode === 'supabase') {
     if (!supabase.url || !supabase.anonKey) {
-      console.error(
-        '❌ Supabase mode requires VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY'
-      );
-      return false;
+      const msg = 'Supabase mode requires VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY';
+      if (isDev) {
+        console.error('❌', msg);
+      }
+      throw new Error(msg);
     }
   } else if (backendMode === 'rest') {
     if (!apiUrl) {
-      console.error('❌ REST mode requires VITE_API_URL');
-      return false;
+      const msg = 'REST mode requires VITE_API_URL';
+      if (isDev) {
+        console.error('❌', msg);
+      }
+      throw new Error(msg);
     }
   } else {
-    console.error(
-      `❌ Invalid backend mode: ${backendMode}. Use 'supabase' or 'rest'`
-    );
-    return false;
+    const msg = `Invalid backend mode: ${backendMode}. Use 'supabase' or 'rest'`;
+    if (isDev) {
+      console.error('❌', msg);
+    }
+    throw new Error(msg);
   }
 
-  console.log(`✅ Backend mode: ${backendMode}`);
-  console.log(`✅ Emails enabled: ${config.features.emails}`);
+  if (isDev) {
+    console.log(`✅ Backend mode: ${backendMode}`);
+    console.log(`✅ Emails enabled: ${config.features.emails}`);
+  }
   return true;
 };
 
-// Initialize validation
-if (import.meta.env.DEV) {
-  validateConfig();
-}
+// Initialize validation on startup (all environments)
+validateConfig();

@@ -1,0 +1,21 @@
+UserNumber,Nombre,Email,Exclusiones
+1,Juan Pérez,juan.perez@example.com,2
+2,María García,maria.garcia@example.com,1
+3,Pedro López,pedro.lopez@example.com,4
+4,Laura Martínez,laura.martinez@example.com,3
+5,Diego Silva,diego.silva@example.com,6
+6,Carmen Rodríguez,carmen.rodriguez@example.com,5
+7,Andrés Torres,andres.torres@example.com,8
+8,Sofía Muñoz,sofia.munoz@example.com,7
+9,Roberto Díaz,roberto.diaz@example.com,10
+10,Valentina Castro,valentina.castro@example.com,9
+11,Felipe Vargas,felipe.vargas@example.com,12
+12,Camila Rojas,camila.rojas@example.com,11
+13,Sebastián Morales,sebastian.morales@example.com,14
+14,Francisca Flores,francisca.flores@example.com,13
+15,Matías Herrera,matias.herrera@example.com,16
+16,Isidora Núñez,isidora.nunez@example.com,15
+17,Tomás Espinoza,tomas.espinoza@example.com,18
+18,Antonia Gutiérrez,antonia.gutierrez@example.com,17
+19,Joaquín Reyes,joaquin.reyes@example.com,20
+20,Javiera Soto,javiera.soto@example.com,19
