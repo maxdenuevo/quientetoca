@@ -2,6 +2,11 @@ import { useState } from 'react';
 import { loginWithGoogle, loginWithMicrosoft } from '../../lib/auth';
 import toast from 'react-hot-toast';
 
+/**
+ * LoginButton - Neon Editorial Design
+ *
+ * OAuth login buttons with neon styling.
+ */
 export default function LoginButton({ provider = 'google', className = '', children }) {
   const [loading, setLoading] = useState(false);
 
@@ -24,11 +29,11 @@ export default function LoginButton({ provider = 'google', className = '', child
       }
 
       if (result?.error) {
-        toast.error(`Error al iniciar sesión: ${result.error.message}`);
+        toast.error(`Error al iniciar sesion: ${result.error.message}`);
         setLoading(false);
       }
     } catch (error) {
-      toast.error('Error inesperado al iniciar sesión');
+      toast.error('Error inesperado al iniciar sesion');
       setLoading(false);
     }
   };
@@ -80,13 +85,11 @@ export default function LoginButton({ provider = 'google', className = '', child
       className={`
         w-full flex items-center justify-center gap-3
         px-5 py-3
-        bg-white dark:bg-dark-surface
-        text-brand-carbon dark:text-dark-text-primary
-        border border-brand-arena dark:border-dark-border
-        rounded-soft
-        font-medium
-        shadow-soft
-        hover:bg-brand-arena/30 dark:hover:bg-dark-surface-hover
+        bg-neon-surface
+        text-text-primary
+        border border-neon-border
+        font-headline font-medium
+        hover:border-accent hover:text-accent
         disabled:opacity-50 disabled:cursor-not-allowed
         transition-colors
         ${className}
@@ -94,8 +97,8 @@ export default function LoginButton({ provider = 'google', className = '', child
     >
       {loading ? (
         <>
-          <div className="w-5 h-5 border-2 border-accent-piedra border-t-transparent rounded-full animate-spin" />
-          <span>Iniciando sesión...</span>
+          <div className="w-5 h-5 border-2 border-text-muted border-t-transparent animate-spin" style={{ borderTopColor: 'var(--accent-color)' }} />
+          <span>Iniciando sesion...</span>
         </>
       ) : (
         <>

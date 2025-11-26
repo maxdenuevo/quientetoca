@@ -6,7 +6,7 @@
 
 _Organiza tu amigo secreto en minutos_
 
-[![Live Demo](https://img.shields.io/badge/demo-quienteto.ca-C45C3E?style=flat&logo=vercel)](https://www.quienteto.ca)
+[![Live Demo](https://img.shields.io/badge/demo-quienteto.ca-FF00FF?style=flat&logo=vercel)](https://www.quienteto.ca)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 **[quienteto.ca](https://www.quienteto.ca)**
@@ -17,8 +17,8 @@ _Organiza tu amigo secreto en minutos_
 
 ## How It Works
 
-1. **Create** - Organizer creates group with deadline and budget options
-2. **Share** - Single invite link (WhatsApp, copy)
+1. **Create** - Set group name, deadline, and budget
+2. **Share** - Single invite link (WhatsApp, copy, QR)
 3. **Join** - Participants login with Google/Microsoft
 4. **Vote** - Everyone votes on budget range
 5. **Customize** - Add wishlists and restrictions
@@ -30,15 +30,14 @@ _Organiza tu amigo secreto en minutos_
 
 | Feature | Description |
 |---------|-------------|
-| **One Link** | Single invite link per group (not 20 individual links) |
+| **One Link** | Single invite link per group |
 | **OAuth Login** | Google/Microsoft - no passwords |
 | **Budget Voting** | Democratic price range selection |
 | **Restrictions** | Exclude pairings (couples, families) |
 | **Wishlists** | Participants add gift hints |
-| **Auto-Raffle** | Runs at deadline, sends email notifications |
+| **Auto-Raffle** | Runs at deadline, sends emails |
 | **Realtime** | See participants join live |
-| **Dark Mode** | System preference aware |
-| **Mobile First** | Responsive design |
+| **Dark Mode** | Neon Editorial design system |
 
 ---
 
@@ -102,11 +101,12 @@ VITE_SUPABASE_ANON_KEY=[anon-key]
 quientetoca/
 ├── frontend/
 │   └── src/
-│       ├── pages/          # Home, JoinGroup, OrganizerDashboard, AuthCallback, NotFound
-│       ├── components/     # 20 React components
-│       ├── hooks/          # useAuth, useRealtime
-│       ├── lib/            # api-client, supabase, auth, config
-│       └── utils/          # matching, validation, formatters
+│       ├── pages/          # Home, GroupPage, AuthCallback, NotFound
+│       ├── components/     # ~20 React components
+│       ├── hooks/          # useRealtime
+│       ├── lib/            # api-client, supabase, auth, config, icons
+│       ├── utils/          # validation, formatters
+│       └── styles/         # Neon Editorial design tokens
 ├── supabase/functions/
 │   ├── execute-raffle/     # Matching + emails
 │   └── check-deadlines/    # Cron for auto-raffle
@@ -126,7 +126,7 @@ quientetoca/
 ```bash
 npm run dev        # Development server
 npm run build      # Production build
-npm test           # Run tests (49 passing)
+npm test           # Run tests
 npm run preview    # Preview production build
 ```
 

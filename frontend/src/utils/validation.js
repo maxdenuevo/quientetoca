@@ -137,3 +137,72 @@ export const validateRestrictions = (participants, restrictions) => {
 
   return { isValid: true, error: null };
 };
+
+/**
+ * Validates simplified group data (v2.1 flow)
+ * @param {Object} groupData - The simplified group data to validate
+ * @returns {Object} - { isValid: boolean, errors: string[] }
+ */
+export const validateGroupSimplified = (groupData) => {
+  const errors = [];
+
+  // Validate group name
+  if (!groupData.name?.trim()) {
+    errors.push('El nombre del grupo es requerido');
+  }
+
+  if (groupData.name && groupData.name.length > 100) {
+    errors.push('El nombre no puede tener más de 100 caracteres');
+  }
+
+  // Validate event date
+  if (!groupData.eventDate) {
+    errors.push('La fecha del evento es requerida');
+  }
+
+  // Validate deadline
+  if (!groupData.deadline) {
+    errors.push('La fecha límite para unirse es requerida');
+  }
+
+  // Validate date relationships
+  if (groupData.deadline && groupData.eventDate) {
+    const deadlineDate = new Date(groupData.deadline);
+    const eventDate = new Date(groupData.eventDate);
+    const now = new Date();
+
+    // Clear time components for date comparison
+    now.setHours(0, 0, 0, 0);
+
+    if (deadlineDate < now) {
+      errors.push('La fecha límite debe ser hoy o en el futuro');
+    }
+
+    if (deadlineDate >= eventDate) {
+      errors.push('La fecha límite debe ser antes del evento');
+    }
+  }
+
+  // Validate budget range (if provided)
+  if (groupData.budgetMin !== undefined && groupData.budgetMax !== undefined) {
+    const min = Number(groupData.budgetMin);
+    const max = Number(groupData.budgetMax);
+
+    if (isNaN(min) || min < 0) {
+      errors.push('El presupuesto mínimo debe ser un número positivo');
+    }
+
+    if (isNaN(max) || max <= 0) {
+      errors.push('El presupuesto máximo debe ser mayor a cero');
+    }
+
+    if (max <= min) {
+      errors.push('El presupuesto máximo debe ser mayor al mínimo');
+    }
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+  };
+};

@@ -225,49 +225,6 @@ export function useRealtimeGroup(groupId, initialData, options = {}) {
 }
 
 /**
- * Hook for real-time participant count (lighter weight)
- */
-export function useRealtimeParticipantCount(groupId, initialCount = 0) {
-  const [count, setCount] = useState(initialCount);
-
-  useEffect(() => {
-    if (!groupId) return;
-
-    const supabase = getSupabase();
-
-    const channel = supabase
-      .channel(`participant-count:${groupId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'participants',
-          filter: `group_id=eq.${groupId}`,
-        },
-        (payload) => {
-          if (payload.eventType === 'INSERT' && !payload.new.kicked) {
-            setCount((c) => c + 1);
-          }
-          if (payload.eventType === 'UPDATE' && payload.new.kicked && !payload.old?.kicked) {
-            setCount((c) => Math.max(0, c - 1));
-          }
-          if (payload.eventType === 'DELETE') {
-            setCount((c) => Math.max(0, c - 1));
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [groupId]);
-
-  return count;
-}
-
-/**
  * Hook to check if current user is still a member (detect kicks)
  */
 export function useRealtimeMembership(groupId, participantId) {

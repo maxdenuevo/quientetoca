@@ -1,17 +1,15 @@
-import PropTypes from 'prop-types';
-
 /**
- * Badge Component
+ * Badge Component - Neon Editorial Design
  *
- * Etiquetas pequeñas para estados, conteos, etc.
- * Estilo Soft UI con colores del sistema de diseño.
+ * Etiquetas con colores neon saturados.
  *
  * Variantes:
- * - default: Piedra neutro
- * - success: Oliva
- * - warning: Arcilla
- * - danger: Burdeos
- * - info: Terracota
+ * - default: Muted neutro
+ * - success: Pernod (verde neon)
+ * - warning: Magenta
+ * - danger: Hotbrick (rojo)
+ * - info: Cyber (cyan)
+ * - primary: Blurple
  */
 export default function Badge({
   children,
@@ -23,41 +21,40 @@ export default function Badge({
 }) {
   const baseStyles = `
     inline-flex items-center gap-1
-    font-medium rounded-soft
+    font-mono font-medium uppercase
   `;
 
   const variants = {
     default: `
-      bg-accent-piedra/20 dark:bg-dark-surface
-      text-accent-piedra dark:text-dark-text-secondary
-      border border-accent-piedra/30 dark:border-dark-border
+      bg-neon-elevated text-text-secondary
+      border border-neon-border
     `,
     success: `
-      bg-accent-oliva/20 dark:bg-accent-oliva/10
-      text-accent-oliva dark:text-accent-oliva-light
-      border border-accent-oliva/30 dark:border-accent-oliva/20
+      bg-accent-pernod/20 text-accent-pernod
+      border border-accent-pernod/50
     `,
     warning: `
-      bg-accent-arcilla/20 dark:bg-accent-arcilla/10
-      text-accent-arcilla dark:text-accent-arcilla-light
-      border border-accent-arcilla/30 dark:border-accent-arcilla/20
+      bg-accent-magenta/20 text-accent-magenta
+      border border-accent-magenta/50
     `,
     danger: `
-      bg-accent-burdeos/20 dark:bg-accent-burdeos/10
-      text-accent-burdeos dark:text-accent-burdeos-light
-      border border-accent-burdeos/30 dark:border-accent-burdeos/20
+      bg-accent-hotbrick/20 text-accent-hotbrick
+      border border-accent-hotbrick/50
     `,
     info: `
-      bg-brand-terracota/20 dark:bg-brand-terracota/10
-      text-brand-terracota dark:text-brand-terracota-light
-      border border-brand-terracota/30 dark:border-brand-terracota/20
+      bg-accent-cyber/20 text-accent-cyber
+      border border-accent-cyber/50
+    `,
+    primary: `
+      bg-[color-mix(in_srgb,var(--accent-color)_20%,transparent)] text-accent
+      border border-[color-mix(in_srgb,var(--accent-color)_50%,transparent)]
     `,
   };
 
   const sizes = {
-    sm: 'px-1.5 py-0.5 text-xs',
-    md: 'px-2 py-1 text-sm',
-    lg: 'px-3 py-1.5 text-base',
+    sm: 'px-1.5 py-0.5 text-[10px]',
+    md: 'px-2 py-1 text-xs',
+    lg: 'px-3 py-1.5 text-sm',
   };
 
   return (
@@ -76,10 +73,3 @@ export default function Badge({
   );
 }
 
-Badge.propTypes = {
-  children: PropTypes.node.isRequired,
-  variant: PropTypes.oneOf(['default', 'success', 'warning', 'danger', 'info']),
-  size: PropTypes.oneOf(['sm', 'md', 'lg']),
-  icon: PropTypes.elementType,
-  className: PropTypes.string,
-};

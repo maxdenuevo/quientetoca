@@ -1,14 +1,11 @@
-import PropTypes from 'prop-types';
-
 /**
- * Card Component
- *
- * Contenedor con estilo Soft UI.
+ * Card Component - Neon Editorial Design
  *
  * Variantes:
- * - default: Borde sutil, fondo marfil/surface
- * - elevated: Con sombra suave
- * - outlined: Solo borde, fondo transparente
+ * - default: Fondo surface, borde sutil
+ * - elevated: Fondo elevated
+ * - outlined: Solo borde, transparente
+ * - glow: Con efecto glow en hover
  */
 export default function Card({
   children,
@@ -16,27 +13,28 @@ export default function Card({
   padding = 'md',
   className = '',
   hoverable = false,
+  laserLine,
+  accentBorder = false,
   onClick,
   ...props
 }) {
   const baseStyles = `
-    rounded-soft-lg
     transition-all duration-200
   `;
 
   const variants = {
     default: `
-      bg-brand-marfil dark:bg-dark-surface
-      border border-brand-arena dark:border-dark-border
+      bg-neon-surface border border-neon-border
     `,
     elevated: `
-      bg-brand-marfil dark:bg-dark-surface
-      shadow-soft-md
-      border border-transparent dark:border-dark-border
+      bg-neon-elevated border border-neon-border
     `,
     outlined: `
-      bg-transparent
-      border border-brand-arena dark:border-dark-border
+      bg-transparent border border-neon-border
+    `,
+    glow: `
+      bg-neon-surface border border-neon-border
+      hover:glow-accent
     `,
   };
 
@@ -48,11 +46,21 @@ export default function Card({
   };
 
   const hoverStyles = hoverable
-    ? 'hover:shadow-soft-md hover:border-brand-arena dark:hover:border-dark-border cursor-pointer'
+    ? 'hover:border-accent cursor-pointer'
     : '';
 
-  const isClickable = onClick || hoverable;
+  const laserLineStyles = laserLine
+    ? {
+        bottom: 'border-b-2 border-accent',
+        left: 'border-l-3 border-accent',
+        top: 'border-t-2 border-accent',
+        right: 'border-r-3 border-accent',
+      }[laserLine]
+    : '';
 
+  const accentBorderStyle = accentBorder ? 'border-accent' : '';
+
+  const isClickable = onClick || hoverable;
   const Component = isClickable ? 'button' : 'div';
 
   return (
@@ -63,6 +71,8 @@ export default function Card({
         ${variants[variant]}
         ${paddings[padding]}
         ${hoverStyles}
+        ${laserLineStyles}
+        ${accentBorderStyle}
         ${className}
       `.trim()}
       {...(isClickable && { type: 'button' })}
@@ -84,7 +94,7 @@ Card.Header = function CardHeader({ children, className = '' }) {
 
 Card.Title = function CardTitle({ children, className = '' }) {
   return (
-    <h3 className={`font-bold text-lg text-brand-carbon dark:text-dark-text-primary ${className}`}>
+    <h3 className={`font-headline font-bold text-lg text-text-primary ${className}`}>
       {children}
     </h3>
   );
@@ -92,7 +102,7 @@ Card.Title = function CardTitle({ children, className = '' }) {
 
 Card.Body = function CardBody({ children, className = '' }) {
   return (
-    <div className={`text-brand-carbon dark:text-dark-text-primary ${className}`}>
+    <div className={`text-text-primary font-body ${className}`}>
       {children}
     </div>
   );
@@ -100,37 +110,9 @@ Card.Body = function CardBody({ children, className = '' }) {
 
 Card.Footer = function CardFooter({ children, className = '' }) {
   return (
-    <div className={`mt-4 pt-4 border-t border-brand-arena dark:border-dark-border ${className}`}>
+    <div className={`mt-4 pt-4 border-t border-neon-border ${className}`}>
       {children}
     </div>
   );
 };
 
-Card.propTypes = {
-  children: PropTypes.node.isRequired,
-  variant: PropTypes.oneOf(['default', 'elevated', 'outlined']),
-  padding: PropTypes.oneOf(['none', 'sm', 'md', 'lg']),
-  className: PropTypes.string,
-  hoverable: PropTypes.bool,
-  onClick: PropTypes.func,
-};
-
-Card.Header.propTypes = {
-  children: PropTypes.node.isRequired,
-  className: PropTypes.string,
-};
-
-Card.Title.propTypes = {
-  children: PropTypes.node.isRequired,
-  className: PropTypes.string,
-};
-
-Card.Body.propTypes = {
-  children: PropTypes.node.isRequired,
-  className: PropTypes.string,
-};
-
-Card.Footer.propTypes = {
-  children: PropTypes.node.isRequired,
-  className: PropTypes.string,
-};

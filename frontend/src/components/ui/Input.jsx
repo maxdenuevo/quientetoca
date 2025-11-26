@@ -1,11 +1,10 @@
 import { forwardRef } from 'react';
-import PropTypes from 'prop-types';
 import { IconAlert } from '../../lib/icons';
 
 /**
- * Input Component
+ * Input Component - Neon Editorial Design
  *
- * Campo de texto con estilo Soft UI.
+ * Campo de texto con estilo dark-only.
  * Soporta label, error, helper text e iconos.
  */
 const Input = forwardRef(function Input(
@@ -26,17 +25,16 @@ const Input = forwardRef(function Input(
 
   const baseStyles = `
     w-full px-4 py-3
-    bg-brand-marfil dark:bg-dark-surface
-    border rounded-soft
-    text-brand-carbon dark:text-dark-text-primary
-    placeholder-accent-piedra dark:placeholder-dark-text-secondary
+    bg-neon-surface border border-neon-border
+    text-text-primary placeholder-text-muted
+    font-body
     transition-all duration-200
-    focus:outline-none focus:ring-2
+    focus:outline-none
   `;
 
   const stateStyles = error
-    ? 'border-accent-burdeos dark:border-accent-burdeos-light focus:border-accent-burdeos focus:ring-accent-burdeos/20'
-    : 'border-brand-arena dark:border-dark-border focus:border-brand-terracota dark:focus:border-brand-terracota-light focus:ring-brand-terracota/20';
+    ? 'border-accent-hotbrick focus:border-accent-hotbrick focus:shadow-glow-hotbrick'
+    : 'focus:border-accent focus:glow-accent';
 
   const iconPadding = Icon
     ? iconPosition === 'left'
@@ -51,7 +49,7 @@ const Input = forwardRef(function Input(
       {label && (
         <label
           htmlFor={inputId}
-          className="block text-sm font-medium mb-2 text-brand-carbon dark:text-dark-text-primary"
+          className="block text-sm font-headline font-medium uppercase tracking-wider mb-2 text-text-primary"
         >
           {label}
         </label>
@@ -63,7 +61,7 @@ const Input = forwardRef(function Input(
             className={`
               absolute top-1/2 -translate-y-1/2
               ${iconPosition === 'left' ? 'left-3' : 'right-3'}
-              text-accent-piedra dark:text-dark-text-secondary pointer-events-none
+              text-text-muted pointer-events-none
             `}
           >
             <Icon className="w-5 h-5" />
@@ -89,7 +87,7 @@ const Input = forwardRef(function Input(
       {error && (
         <div
           id={`${inputId}-error`}
-          className="flex items-center gap-1 mt-1.5 text-sm text-accent-burdeos dark:text-accent-burdeos-light"
+          className="flex items-center gap-1 mt-1.5 text-sm text-accent-hotbrick font-headline"
           role="alert"
         >
           <IconAlert className="w-4 h-4" />
@@ -100,7 +98,7 @@ const Input = forwardRef(function Input(
       {helperText && !error && (
         <p
           id={`${inputId}-helper`}
-          className="mt-1.5 text-sm text-accent-piedra dark:text-dark-text-secondary"
+          className="mt-1.5 text-sm text-text-secondary font-body"
         >
           {helperText}
         </p>
@@ -108,16 +106,5 @@ const Input = forwardRef(function Input(
     </div>
   );
 });
-
-Input.propTypes = {
-  label: PropTypes.string,
-  error: PropTypes.string,
-  helperText: PropTypes.string,
-  icon: PropTypes.elementType,
-  iconPosition: PropTypes.oneOf(['left', 'right']),
-  fullWidth: PropTypes.bool,
-  className: PropTypes.string,
-  id: PropTypes.string,
-};
 
 export default Input;

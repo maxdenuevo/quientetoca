@@ -1,15 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
+import { useState, useEffect } from 'react';
 import { IconGift, IconPlus, IconClose, IconSave, IconLoader } from '../../lib/icons';
 import { Card, Button, Input } from '../ui';
 import { apiClient } from '../../lib/api-client';
 import toast from 'react-hot-toast';
 
 /**
- * WishlistEditor Component
+ * WishlistEditor - Neon Editorial Design
  *
- * Allows participants to add, edit, and remove wishlist items
- * Inline editing with save functionality
+ * Allows participants to add, edit, and remove wishlist items.
  */
 export default function WishlistEditor({ participantId, initialItems = [], onUpdate }) {
   const [items, setItems] = useState(initialItems);
@@ -17,13 +15,11 @@ export default function WishlistEditor({ participantId, initialItems = [], onUpd
   const [saving, setSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
 
-  // Sync with initial items
   useEffect(() => {
     setItems(initialItems);
     setHasChanges(false);
   }, [initialItems]);
 
-  // Add new item
   const handleAddItem = () => {
     const trimmed = newItem.trim();
     if (!trimmed) return;
@@ -38,13 +34,11 @@ export default function WishlistEditor({ participantId, initialItems = [], onUpd
     setHasChanges(true);
   };
 
-  // Remove item
   const handleRemoveItem = (index) => {
     setItems(items.filter((_, i) => i !== index));
     setHasChanges(true);
   };
 
-  // Handle key press (Enter to add)
   const handleKeyPress = (e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
@@ -52,7 +46,6 @@ export default function WishlistEditor({ participantId, initialItems = [], onUpd
     }
   };
 
-  // Save wishlist
   const handleSave = async () => {
     try {
       setSaving(true);
@@ -69,10 +62,10 @@ export default function WishlistEditor({ participantId, initialItems = [], onUpd
   };
 
   return (
-    <Card padding="md">
+    <Card padding="md" variant="outlined">
       <Card.Header className="flex items-center justify-between">
         <Card.Title className="flex items-center gap-2">
-          <IconGift className="w-5 h-5 text-brand-terracota" />
+          <IconGift className="w-5 h-5 text-accent-pernod" />
           Mi Wishlist
         </Card.Title>
         {hasChanges && (
@@ -90,9 +83,8 @@ export default function WishlistEditor({ participantId, initialItems = [], onUpd
       </Card.Header>
 
       <Card.Body>
-        {/* Items List */}
         {items.length === 0 ? (
-          <p className="text-accent-piedra dark:text-dark-text-secondary text-sm mb-4">
+          <p className="text-text-secondary text-sm mb-4 font-body">
             Aún no tienes items. Agrega lo que te gustaría recibir.
           </p>
         ) : (
@@ -100,15 +92,15 @@ export default function WishlistEditor({ participantId, initialItems = [], onUpd
             {items.map((item, index) => (
               <li
                 key={index}
-                className="flex items-center justify-between gap-2 p-2 bg-brand-arena/30 dark:bg-dark-surface-hover rounded-soft-lg group"
+                className="flex items-center justify-between gap-2 p-2 bg-neon-elevated border border-neon-border group"
               >
-                <span className="text-sm flex-1 text-brand-carbon dark:text-dark-text-primary">{item}</span>
+                <span className="text-sm flex-1 text-text-primary font-body">{item}</span>
                 <Button
                   variant="ghost"
                   size="sm"
                   icon={IconClose}
                   onClick={() => handleRemoveItem(index)}
-                  className="opacity-0 group-hover:opacity-100 text-accent-piedra hover:text-accent-burdeos"
+                  className="opacity-0 group-hover:opacity-100 text-text-muted hover:text-accent-hotbrick"
                   aria-label={`Eliminar ${item}`}
                 />
               </li>
@@ -116,7 +108,6 @@ export default function WishlistEditor({ participantId, initialItems = [], onUpd
           </ul>
         )}
 
-        {/* Add New Item */}
         {items.length < 10 && (
           <div className="flex gap-2">
             <Input
@@ -137,8 +128,7 @@ export default function WishlistEditor({ participantId, initialItems = [], onUpd
           </div>
         )}
 
-        {/* Item Count */}
-        <p className="text-xs text-accent-piedra dark:text-dark-text-secondary mt-2">
+        <p className="text-xs text-text-secondary mt-2 font-mono">
           {items.length}/10 items
         </p>
       </Card.Body>
@@ -146,8 +136,3 @@ export default function WishlistEditor({ participantId, initialItems = [], onUpd
   );
 }
 
-WishlistEditor.propTypes = {
-  participantId: PropTypes.string.isRequired,
-  initialItems: PropTypes.arrayOf(PropTypes.string),
-  onUpdate: PropTypes.func,
-};

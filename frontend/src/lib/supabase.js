@@ -23,7 +23,7 @@ export const getSupabase = () => {
     }
 
     supabaseClient = createClient(url, anonKey);
-    console.log('✅ Supabase client initialized');
+    if (import.meta.env.DEV) console.log('✅ Supabase client initialized');
   }
 
   return supabaseClient;

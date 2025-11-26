@@ -1,6 +1,5 @@
 /**
  * Shared formatting utilities for dates, prices, and countdowns
- * Consolidates duplicate code from JoinGroup.jsx and OrganizerDashboard.jsx
  */
 
 /**

@@ -5,40 +5,69 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ========================================
+   CSS VARIABLES - NEON EDITORIAL
+   ======================================== */
 :root {
-  font-family: 'DM Sans', Inter, system-ui, sans-serif;
+  /* Accent colors */
+  --accent-blurple: #7B5CFF;
+  --accent-pernod: #C8FF00;
+  --accent-hotbrick: #FF4444;
+  --accent-cyber: #00FFFF;
+  --accent-magenta: #FF00FF;
+
+  /* Default accent (magenta - overridden by random in Layout.jsx) */
+  --accent-color: var(--accent-magenta);
+  --accent-glow: rgba(255, 0, 255, 0.5);
+
+  /* Typography */
+  font-family: 'Source Serif 4', Georgia, serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Random accent color set by Layout.jsx on mount */
+
+/* ========================================
+   BASE STYLES
+   ======================================== */
 @layer base {
   body {
-    @apply bg-brand-marfil dark:bg-dark-bg text-brand-carbon dark:text-dark-text-primary;
+    @apply bg-neon-base text-text-primary;
     @apply min-h-screen w-full;
+    @apply font-body;
   }
 
   h1 {
-    @apply text-3xl md:text-4xl lg:text-5xl font-bold leading-tight;
+    @apply font-display text-4xl md:text-5xl lg:text-6xl uppercase tracking-wide;
   }
 
   h2 {
-    @apply text-2xl md:text-3xl font-bold;
+    @apply font-headline text-2xl md:text-3xl font-bold;
   }
 
   h3 {
-    @apply text-xl md:text-2xl font-semibold;
+    @apply font-headline text-xl md:text-2xl font-semibold;
   }
 
   a {
-    @apply text-brand-terracota dark:text-brand-terracota-light;
-    @apply hover:text-brand-terracota-dark dark:hover:text-brand-terracota;
-    @apply transition-colors duration-200;
+    color: var(--accent-color);
+    @apply hover:opacity-80;
+    @apply transition-opacity duration-200;
   }
 
-  /* Reset button styles - los componentes Button manejan sus propios estilos */
   button {
-    @apply font-medium;
+    @apply font-headline font-medium;
     @apply transition-all duration-200;
+  }
+
+  /* Remove autofill background */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 1000px #1A1A1A inset !important;
+    -webkit-text-fill-color: #FFFFFF !important;
+    caret-color: #FFFFFF !important;
   }
 }
 
@@ -50,49 +79,270 @@
   @apply px-4 mx-auto max-w-7xl sm:px-6 lg:px-8;
 }
 
+/* ========================================
+   COMPONENT UTILITIES
+   ======================================== */
 @layer utilities {
-  /* Soft UI card utility */
-  .card-soft {
-    @apply bg-brand-marfil dark:bg-dark-surface;
-    @apply border border-brand-arena dark:border-dark-border;
-    @apply rounded-soft-lg;
+  /* Laser line effects */
+  .laser-line-bottom {
+    border-bottom: 2px solid var(--accent-color);
   }
 
-  /* Soft UI input style */
-  .input-soft {
-    @apply w-full px-4 py-3;
-    @apply border border-brand-arena dark:border-dark-border;
-    @apply rounded-soft;
-    @apply bg-brand-marfil dark:bg-dark-surface;
-    @apply text-brand-carbon dark:text-dark-text-primary;
-    @apply placeholder-accent-piedra dark:placeholder-dark-text-secondary;
-    @apply focus:outline-none focus:border-brand-terracota dark:focus:border-brand-terracota-light;
-    @apply focus:ring-2 focus:ring-brand-terracota/20 dark:focus:ring-brand-terracota-light/20;
+  .laser-line-left {
+    border-left: 3px solid var(--accent-color);
+  }
+
+  .laser-line-top {
+    border-top: 2px solid var(--accent-color);
+  }
+
+  /* Glow effects using CSS variable */
+  .glow-accent {
+    box-shadow: 0 0 20px var(--accent-glow);
+  }
+
+  .glow-accent-lg {
+    box-shadow: 0 0 40px var(--accent-glow);
+  }
+
+  /* Text effects */
+  .text-gradient {
+    background: linear-gradient(90deg, var(--accent-blurple), var(--accent-cyber));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .text-gradient-warm {
+    background: linear-gradient(90deg, var(--accent-hotbrick), var(--accent-magenta));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .text-glow {
+    text-shadow: 0 0 20px var(--accent-glow);
+  }
+
+  /* Card styles */
+  .card-neon {
+    @apply bg-neon-surface border border-neon-border;
     @apply transition-all duration-200;
   }
 
-  /* Legacy utilities (para migración gradual) */
-  .card-brutal {
-    @apply card-soft;
+  .card-neon:hover {
+    border-color: var(--accent-color);
   }
 
-  .input-brutal {
-    @apply input-soft;
+  .card-glow {
+    @apply card-neon;
   }
 
-  .btn-primary {
-    @apply bg-brand-terracota hover:bg-brand-terracota-dark text-white;
+  .card-glow:hover {
+    box-shadow: 0 0 30px var(--accent-glow);
   }
 
-  .btn-secondary {
-    @apply bg-brand-arena dark:bg-dark-surface;
-    @apply text-brand-carbon dark:text-dark-text-primary;
-    @apply hover:shadow-soft;
+  /* Input styles */
+  .input-neon {
+    @apply w-full px-4 py-3;
+    @apply bg-neon-surface border border-neon-border;
+    @apply text-text-primary placeholder-text-muted;
+    @apply font-body;
+    @apply focus:outline-none;
+    @apply transition-all duration-200;
   }
 
-  .btn-outline {
-    @apply bg-transparent border border-brand-arena dark:border-dark-border;
-    @apply text-brand-carbon dark:text-dark-text-primary;
-    @apply hover:bg-brand-arena/50 dark:hover:bg-dark-surface;
+  .input-neon:focus {
+    border-color: var(--accent-color);
   }
+
+  .input-neon:focus {
+    box-shadow: 0 0 10px var(--accent-glow);
+  }
+
+  /* Button base */
+  .btn-neon {
+    @apply inline-flex items-center justify-center gap-2;
+    @apply px-6 py-3;
+    @apply font-headline text-sm font-semibold uppercase tracking-wider;
+    @apply transition-all duration-200;
+  }
+
+  /* Accent border using CSS variable */
+  .border-accent {
+    border-color: var(--accent-color);
+  }
+
+  .text-accent {
+    color: var(--accent-color);
+  }
+
+  .bg-accent {
+    background-color: var(--accent-color);
+  }
+}
+
+/* ========================================
+   REACT DATEPICKER DARK MODE OVERRIDE
+   ======================================== */
+.react-datepicker {
+  @apply bg-neon-surface border-neon-border font-headline !important;
+}
+
+.react-datepicker__header {
+  @apply bg-neon-elevated border-b border-neon-border !important;
+}
+
+.react-datepicker__current-month,
+.react-datepicker__day-name,
+.react-datepicker-time__header {
+  @apply text-text-primary !important;
+}
+
+.react-datepicker__day {
+  @apply text-text-primary hover:bg-neon-elevated !important;
+}
+
+.react-datepicker__day--selected,
+.react-datepicker__day--keyboard-selected {
+  background-color: var(--accent-color) !important;
+  @apply text-neon-base !important;
+}
+
+.react-datepicker__day--disabled {
+  @apply text-text-muted !important;
+}
+
+.react-datepicker__navigation-icon::before {
+  @apply border-text-secondary !important;
+}
+
+.react-datepicker__triangle {
+  display: none !important;
+}
+
+/* Inline calendar for neon-calendar class */
+.neon-calendar {
+  @apply bg-neon-surface border border-neon-border !important;
+  font-family: 'Space Grotesk', sans-serif !important;
+}
+
+.neon-calendar .react-datepicker__month-container {
+  @apply bg-transparent !important;
+}
+
+.neon-calendar .react-datepicker__header {
+  @apply bg-neon-elevated border-b border-neon-border !important;
+  padding: 12px 8px 8px !important;
+}
+
+.neon-calendar .react-datepicker__current-month {
+  @apply text-text-primary font-semibold text-base !important;
+  font-family: 'Space Grotesk', sans-serif !important;
+}
+
+.neon-calendar .react-datepicker__day-names {
+  @apply mt-2 !important;
+}
+
+.neon-calendar .react-datepicker__day-name {
+  @apply text-text-secondary text-xs uppercase !important;
+  font-family: 'JetBrains Mono', monospace !important;
+  width: 2.5rem !important;
+  line-height: 2rem !important;
+}
+
+.neon-calendar .react-datepicker__day {
+  @apply text-text-primary !important;
+  width: 2.5rem !important;
+  line-height: 2.5rem !important;
+  margin: 2px !important;
+  border-radius: 0 !important;
+}
+
+.neon-calendar .react-datepicker__day:hover {
+  @apply bg-neon-elevated !important;
+  border-radius: 0 !important;
+}
+
+/* Range selection - start date (magenta) */
+.neon-calendar .react-datepicker__day--range-start {
+  background-color: var(--accent-magenta) !important;
+  @apply text-neon-base font-semibold !important;
+}
+
+/* Range selection - end date (pernod) */
+.neon-calendar .react-datepicker__day--range-end {
+  background-color: var(--accent-pernod) !important;
+  @apply text-neon-base font-semibold !important;
+}
+
+/* Range selection - in range */
+.neon-calendar .react-datepicker__day--in-range {
+  @apply bg-neon-elevated !important;
+}
+
+/* Selected day (single selection) */
+.neon-calendar .react-datepicker__day--selected {
+  background-color: var(--accent-color) !important;
+  @apply text-neon-base !important;
+}
+
+.neon-calendar .react-datepicker__day--keyboard-selected {
+  background-color: var(--accent-color) !important;
+  @apply text-neon-base !important;
+}
+
+.neon-calendar .react-datepicker__day--disabled {
+  @apply text-text-muted opacity-30 !important;
+}
+
+.neon-calendar .react-datepicker__day--outside-month {
+  @apply text-text-muted !important;
+}
+
+/* Navigation arrows */
+.neon-calendar .react-datepicker__navigation {
+  @apply top-3 !important;
+}
+
+.neon-calendar .react-datepicker__navigation-icon::before {
+  @apply border-text-primary !important;
+}
+
+.neon-calendar .react-datepicker__navigation:hover .react-datepicker__navigation-icon::before {
+  border-color: var(--accent-color) !important;
+}
+
+/* Two-month display spacing */
+.neon-calendar.react-datepicker {
+  @apply flex gap-0 !important;
+}
+
+/* ========================================
+   SCROLLBAR STYLING
+   ======================================== */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-neon-base;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-neon-border;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-text-muted;
+}
+
+/* ========================================
+   SELECTION STYLING
+   ======================================== */
+::selection {
+  background: var(--accent-color);
+  color: #0A0A0A;
 }

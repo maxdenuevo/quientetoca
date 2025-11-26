@@ -1,15 +1,13 @@
-import React, { useState } from 'react';
-import PropTypes from 'prop-types';
-import { IconUserRemove, IconCheck, IconLoader, IconAlert } from '../../lib/icons';
+import { useState } from 'react';
+import { IconUserRemove, IconLoader, IconAlert } from '../../lib/icons';
 import { Card } from '../ui';
 import { apiClient } from '../../lib/api-client';
 import toast from 'react-hot-toast';
 
 /**
- * SelfRestrictionPicker Component
+ * SelfRestrictionPicker - Neon Editorial Design
  *
- * Allows participants to add self-restrictions
- * (people they don't want to be matched with)
+ * Allows participants to add self-restrictions.
  */
 export default function SelfRestrictionPicker({
   groupId,
@@ -19,9 +17,8 @@ export default function SelfRestrictionPicker({
   restrictions = [],
   onUpdate,
 }) {
-  const [loading, setLoading] = useState(null); // participant id being processed
+  const [loading, setLoading] = useState(null);
 
-  // Get my restrictions (where I'm participant1 or participant2)
   const getMyRestrictions = () => {
     return restrictions.filter(
       (r) =>
@@ -30,7 +27,6 @@ export default function SelfRestrictionPicker({
     );
   };
 
-  // Check if I have a restriction with this participant
   const hasRestrictionWith = (participantId) => {
     return restrictions.some(
       (r) =>
@@ -39,7 +35,6 @@ export default function SelfRestrictionPicker({
     );
   };
 
-  // Get restriction ID if exists
   const getRestrictionId = (participantId) => {
     const restriction = restrictions.find(
       (r) =>
@@ -50,7 +45,6 @@ export default function SelfRestrictionPicker({
     return restriction?.id;
   };
 
-  // Toggle restriction
   const handleToggle = async (participant) => {
     const restrictionId = getRestrictionId(participant.id);
 
@@ -58,40 +52,37 @@ export default function SelfRestrictionPicker({
       setLoading(participant.id);
 
       if (restrictionId) {
-        // Remove restriction
         await apiClient.removeSelfRestriction(restrictionId, userId);
         toast.success(`Ya puedes dar a ${participant.name || participant.users?.name}`);
       } else {
-        // Add restriction
         await apiClient.addSelfRestriction(groupId, userId, myParticipantId, participant.id);
-        toast.success(`No darás regalo a ${participant.name || participant.users?.name}`);
+        toast.success(`No daras regalo a ${participant.name || participant.users?.name}`);
       }
 
       onUpdate?.();
     } catch (err) {
       console.error('Error toggling restriction:', err);
-      toast.error('Error al actualizar restricción');
+      toast.error('Error al actualizar restriccion');
     } finally {
       setLoading(null);
     }
   };
 
-  // Filter out myself from participants
   const otherParticipants = participants.filter((p) => p.id !== myParticipantId);
   const myRestrictions = getMyRestrictions();
 
   if (otherParticipants.length === 0) {
     return (
-      <Card padding="md">
+      <Card padding="md" variant="outlined">
         <Card.Header>
           <Card.Title className="flex items-center gap-2">
-            <IconUserRemove className="w-5 h-5 text-accent-burdeos" />
+            <IconUserRemove className="w-5 h-5 text-accent-hotbrick" />
             Restricciones
           </Card.Title>
         </Card.Header>
         <Card.Body>
-          <p className="text-accent-piedra dark:text-dark-text-secondary text-sm">
-            Aún no hay otros participantes en el grupo.
+          <p className="text-text-secondary text-sm font-body">
+            Aun no hay otros participantes en el grupo.
           </p>
         </Card.Body>
       </Card>
@@ -99,28 +90,26 @@ export default function SelfRestrictionPicker({
   }
 
   return (
-    <Card padding="md">
+    <Card padding="md" variant="outlined">
       <Card.Header>
         <Card.Title className="flex items-center gap-2">
-          <IconUserRemove className="w-5 h-5 text-accent-burdeos" />
+          <IconUserRemove className="w-5 h-5 text-accent-hotbrick" />
           Restricciones
         </Card.Title>
       </Card.Header>
 
       <Card.Body>
-        <p className="text-sm text-accent-piedra dark:text-dark-text-secondary mb-4">
-          Selecciona personas a las que <strong className="text-brand-carbon dark:text-dark-text-primary">no quieres</strong> regalarles (ej: tu pareja, familiar).
+        <p className="text-sm text-text-secondary mb-4 font-body">
+          Selecciona personas a las que <strong className="text-text-primary">no quieres</strong> regalarles (ej: tu pareja, familiar).
         </p>
 
-        {/* Info about restrictions being public */}
-        <div className="flex items-start gap-2 p-3 bg-accent-arcilla/10 dark:bg-accent-arcilla/5 border border-accent-arcilla/30 rounded-soft-lg mb-4">
-          <IconAlert className="w-4 h-4 text-accent-arcilla mt-0.5 flex-shrink-0" />
-          <p className="text-xs text-accent-arcilla dark:text-accent-arcilla-light">
-            Las restricciones son públicas - otros participantes pueden ver que te restringiste.
+        <div className="flex items-start gap-2 p-3 bg-accent-magenta/10 border border-accent-magenta/30 mb-4">
+          <IconAlert className="w-4 h-4 text-accent-magenta mt-0.5 flex-shrink-0" />
+          <p className="text-xs text-accent-magenta font-body">
+            Las restricciones son publicas - otros participantes pueden ver que te restringiste.
           </p>
         </div>
 
-        {/* Participants List */}
         <div className="space-y-2">
           {otherParticipants.map((participant) => {
             const hasRestriction = hasRestrictionWith(participant.id);
@@ -134,11 +123,11 @@ export default function SelfRestrictionPicker({
                 onClick={() => handleToggle(participant)}
                 disabled={isLoading}
                 className={`
-                  w-full flex items-center justify-between gap-3 p-3 rounded-soft-lg border transition-all
+                  w-full flex items-center justify-between gap-3 p-3 border transition-all
                   ${
                     hasRestriction
-                      ? 'border-accent-burdeos bg-accent-burdeos/10'
-                      : 'border-brand-arena dark:border-dark-border hover:border-brand-terracota/50'
+                      ? 'border-accent-hotbrick bg-accent-hotbrick/10'
+                      : 'border-neon-border hover:border-accent'
                   }
                 `}
               >
@@ -147,28 +136,28 @@ export default function SelfRestrictionPicker({
                     <img
                       src={avatar}
                       alt=""
-                      className="w-8 h-8 rounded-full border border-brand-arena dark:border-dark-border"
+                      className="w-8 h-8 rounded-full border border-neon-border"
                     />
                   ) : (
-                    <div className="w-8 h-8 rounded-full bg-brand-terracota/20 dark:bg-dark-surface-hover flex items-center justify-center text-sm font-bold text-brand-terracota">
+                    <div className="w-8 h-8 rounded-full bg-[color-mix(in_srgb,var(--accent-color)_20%,transparent)] flex items-center justify-center text-sm font-mono font-bold text-accent">
                       {name?.[0]?.toUpperCase() || '?'}
                     </div>
                   )}
-                  <span className={`font-medium ${hasRestriction ? 'line-through text-accent-piedra' : 'text-brand-carbon dark:text-dark-text-primary'}`}>
+                  <span className={`font-headline font-medium ${hasRestriction ? 'line-through text-text-muted' : 'text-text-primary'}`}>
                     {name}
                   </span>
                 </div>
 
                 <div className="flex items-center gap-2">
                   {isLoading ? (
-                    <IconLoader className="w-5 h-5 animate-spin text-accent-piedra" />
+                    <IconLoader className="w-5 h-5 animate-spin text-text-muted" />
                   ) : hasRestriction ? (
-                    <div className="flex items-center gap-1 text-accent-burdeos text-sm">
+                    <div className="flex items-center gap-1 text-accent-hotbrick text-sm font-mono uppercase">
                       <IconUserRemove className="w-4 h-4" />
                       <span>Restringido</span>
                     </div>
                   ) : (
-                    <div className="text-accent-piedra dark:text-dark-text-secondary text-sm">
+                    <div className="text-text-muted text-sm font-mono">
                       Click para restringir
                     </div>
                   )}
@@ -178,10 +167,9 @@ export default function SelfRestrictionPicker({
           })}
         </div>
 
-        {/* Summary */}
         {myRestrictions.length > 0 && (
-          <p className="text-xs text-accent-piedra dark:text-dark-text-secondary mt-4">
-            Tienes {myRestrictions.length} restricción{myRestrictions.length !== 1 ? 'es' : ''} activa{myRestrictions.length !== 1 ? 's' : ''}
+          <p className="text-xs text-text-secondary mt-4 font-mono">
+            Tienes {myRestrictions.length} restriccion{myRestrictions.length !== 1 ? 'es' : ''} activa{myRestrictions.length !== 1 ? 's' : ''}
           </p>
         )}
       </Card.Body>
@@ -189,27 +177,3 @@ export default function SelfRestrictionPicker({
   );
 }
 
-SelfRestrictionPicker.propTypes = {
-  groupId: PropTypes.string.isRequired,
-  userId: PropTypes.string.isRequired,
-  myParticipantId: PropTypes.string.isRequired,
-  participants: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      name: PropTypes.string,
-      users: PropTypes.shape({
-        name: PropTypes.string,
-        avatar_url: PropTypes.string,
-      }),
-    })
-  ),
-  restrictions: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      participant1_id: PropTypes.string.isRequired,
-      participant2_id: PropTypes.string.isRequired,
-      is_self_imposed: PropTypes.bool,
-    })
-  ),
-  onUpdate: PropTypes.func,
-};

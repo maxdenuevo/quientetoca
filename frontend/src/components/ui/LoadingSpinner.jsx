@@ -1,15 +1,9 @@
-import React from 'react';
-import PropTypes from 'prop-types';
 import { IconGift } from '../../lib/icons';
 
 /**
- * LoadingSpinner - Reusable loading indicator with Soft UI styling
+ * LoadingSpinner - Neon Editorial Design
  *
- * @param {Object} props
- * @param {string} [props.size='md'] - Size of the spinner: 'sm', 'md', 'lg'
- * @param {string} [props.message] - Optional loading message to display
- * @param {boolean} [props.fullScreen=false] - Whether to display as full screen centered
- * @returns {JSX.Element}
+ * Spinner con glow effect y tipografia bold.
  */
 function LoadingSpinner({
   size = 'md',
@@ -35,17 +29,18 @@ function LoadingSpinner({
       aria-live="polite"
       aria-label={message || "Cargando contenido"}
     >
-      {/* Animated Gift Icon */}
+      {/* Animated Gift Icon with glow */}
       <div className="relative">
         {/* Rotating border */}
         <div
-          className={`${sizeClasses[size]} rounded-soft-lg border-2 border-brand-terracota animate-spin`}
+          className={`${sizeClasses[size]} border-2 border-neon-border border-t-accent animate-spin`}
+          style={{ borderTopColor: 'var(--accent-color)' }}
           aria-hidden="true"
         />
         {/* Centered Gift Icon */}
         <div className="absolute inset-0 flex items-center justify-center">
           <IconGift
-            className={`${iconSizes[size]} text-brand-terracota animate-pulse`}
+            className={`${iconSizes[size]} text-accent animate-pulse`}
             aria-hidden="true"
           />
         </div>
@@ -53,7 +48,7 @@ function LoadingSpinner({
 
       {/* Loading Message */}
       {message && (
-        <p className="text-lg font-medium text-brand-carbon dark:text-dark-text-primary animate-pulse">
+        <p className="text-lg font-headline uppercase tracking-wider text-text-primary animate-pulse">
           {message}
         </p>
       )}
@@ -62,7 +57,7 @@ function LoadingSpinner({
 
   if (fullScreen) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-brand-marfil dark:bg-dark-bg">
+      <div className="flex items-center justify-center min-h-screen bg-neon-base">
         {spinner}
       </div>
     );
@@ -70,11 +65,5 @@ function LoadingSpinner({
 
   return spinner;
 }
-
-LoadingSpinner.propTypes = {
-  size: PropTypes.oneOf(['sm', 'md', 'lg']),
-  message: PropTypes.string,
-  fullScreen: PropTypes.bool,
-};
 
 export default LoadingSpinner;

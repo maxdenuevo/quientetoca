@@ -1,21 +1,11 @@
-import React from 'react';
-import PropTypes from 'prop-types';
 import { IconAlert, IconRefresh, IconHome } from '../../lib/icons';
 import { useNavigate } from 'react-router-dom';
 import { Button, Card } from './index';
 
 /**
- * ErrorDisplay - Reusable error display component with Soft UI styling
+ * ErrorDisplay - Neon Editorial Design
  *
- * @param {Object} props
- * @param {string} props.title - Main error title
- * @param {string} props.message - Error message or description
- * @param {boolean} [props.showRefresh=false] - Whether to show refresh button
- * @param {boolean} [props.showHome=false] - Whether to show home button
- * @param {Function} [props.onRefresh] - Custom refresh handler
- * @param {string} [props.variant='error'] - Display variant: 'error', 'warning', 'info'
- * @param {boolean} [props.fullScreen=true] - Whether to display as full screen centered
- * @returns {JSX.Element}
+ * Display de errores con estilo neon y glow effects.
  */
 function ErrorDisplay({
   title,
@@ -30,19 +20,22 @@ function ErrorDisplay({
 
   const variantStyles = {
     error: {
-      iconColor: 'text-accent-burdeos',
-      borderColor: 'border-accent-burdeos/30',
-      bgColor: 'bg-accent-burdeos/10',
+      iconColor: 'text-accent-hotbrick',
+      borderColor: 'border-accent-hotbrick/50',
+      bgColor: 'bg-accent-hotbrick/10',
+      glowClass: 'shadow-glow-hotbrick',
     },
     warning: {
-      iconColor: 'text-accent-arcilla',
-      borderColor: 'border-accent-arcilla/30',
-      bgColor: 'bg-accent-arcilla/10',
+      iconColor: 'text-accent-magenta',
+      borderColor: 'border-accent-magenta/50',
+      bgColor: 'bg-accent-magenta/10',
+      glowClass: 'shadow-glow-magenta',
     },
     info: {
-      iconColor: 'text-accent-oliva',
-      borderColor: 'border-accent-oliva/30',
-      bgColor: 'bg-accent-oliva/10',
+      iconColor: 'text-accent-pernod',
+      borderColor: 'border-accent-pernod/50',
+      bgColor: 'bg-accent-pernod/10',
+      glowClass: 'shadow-glow-pernod',
     },
   };
 
@@ -63,30 +56,32 @@ function ErrorDisplay({
   const errorContent = (
     <Card
       padding="lg"
-      className="max-w-2xl w-full text-center"
+      className={`max-w-2xl w-full text-center border ${styles.borderColor}`}
       role="alert"
       aria-live="assertive"
     >
       <Card.Body>
         {/* Error Icon */}
         <div className="mb-6 flex justify-center" aria-hidden="true">
-          <div className={`p-4 ${styles.bgColor} rounded-soft-lg border ${styles.borderColor}`}>
+          <div className={`p-4 ${styles.bgColor} border ${styles.borderColor}`}>
             <IconAlert
               className={`w-16 h-16 ${styles.iconColor}`}
             />
           </div>
         </div>
 
-        {/* Error Message */}
+        {/* Error Title */}
         <h2
-          className="text-2xl font-bold mb-4 text-brand-carbon dark:text-dark-text-primary"
+          className={`font-display text-3xl uppercase tracking-wide mb-4 ${styles.iconColor}`}
           id="error-title"
         >
           {title}
         </h2>
+
+        {/* Error Message */}
         {message && (
           <p
-            className="text-lg mb-6 text-accent-piedra dark:text-dark-text-secondary max-w-md mx-auto"
+            className="text-lg mb-6 text-text-secondary font-body max-w-md mx-auto"
             id="error-description"
           >
             {message}
@@ -112,7 +107,7 @@ function ErrorDisplay({
                 variant="primary"
                 onClick={handleHome}
                 icon={IconHome}
-                aria-label="Ir a la página de inicio"
+                aria-label="Ir a la pagina de inicio"
               >
                 Ir al Inicio
               </Button>
@@ -125,7 +120,7 @@ function ErrorDisplay({
 
   if (fullScreen) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 bg-brand-marfil dark:bg-dark-bg">
+      <div className="min-h-screen flex items-center justify-center p-4 bg-neon-base">
         {errorContent}
       </div>
     );
@@ -133,15 +128,5 @@ function ErrorDisplay({
 
   return errorContent;
 }
-
-ErrorDisplay.propTypes = {
-  title: PropTypes.string.isRequired,
-  message: PropTypes.string,
-  showRefresh: PropTypes.bool,
-  showHome: PropTypes.bool,
-  onRefresh: PropTypes.func,
-  variant: PropTypes.oneOf(['error', 'warning', 'info']),
-  fullScreen: PropTypes.bool,
-};
 
 export default ErrorDisplay;

@@ -1,12 +1,7 @@
 // ========================================
-// QUIENTETO.CA - UNIFIED API CLIENT
-// ========================================
-// This client abstracts REST API and Supabase calls
-// Use this instead of direct fetch or Supabase calls
+// QUIENTETO.CA - API CLIENT (SUPABASE)
 // ========================================
 
-import axios from 'axios';
-import { config } from './config';
 import { getSupabase } from './supabase';
 
 // Debug logging - only in development
@@ -15,258 +10,11 @@ const log = (...args) => DEBUG && console.log('[api]', ...args);
 
 class ApiClient {
   constructor() {
-    this.mode = config.backendMode;
-    this.apiUrl = config.apiUrl;
-
-    // Initialize REST client
-    if (this.mode === 'rest') {
-      this.rest = axios.create({
-        baseURL: this.apiUrl,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-    }
+    // Supabase-only mode
   }
 
   // ========================================
-  // GROUPS
-  // ========================================
-
-  async createGroup(groupData) {
-    if (this.mode === 'supabase') {
-      const supabase = getSupabase();
-
-      // Create group
-      const { data: group, error: groupError } = await supabase
-        .from('groups')
-        .insert([
-          {
-            name: groupData.name,
-            deadline: groupData.deadline,
-            event_date: groupData.deadline, // Using deadline as event_date for now
-            price_min: groupData.priceRange.min,
-            price_max: groupData.priceRange.max,
-            currency: groupData.priceRange.currency,
-            admin_token: this.generateToken(),
-            admin_email: groupData.adminEmail,
-          },
-        ])
-        .select()
-        .single();
-
-      if (groupError) throw groupError;
-
-      // Create participants
-      const participantsData = groupData.participants.map((p) => ({
-        group_id: group.id,
-        name: p.name,
-        email: p.email,
-        access_token: this.generateToken(),
-      }));
-
-      const { data: participants, error: participantsError } = await supabase
-        .from('participants')
-        .insert(participantsData)
-        .select();
-
-      if (participantsError) throw participantsError;
-
-      // Create ID mapping: client-side IDs → database UUIDs
-      // Frontend uses temporary IDs (1, 2, 3...) but DB returns UUIDs
-      const idMapping = {};
-      groupData.participants.forEach((clientParticipant, index) => {
-        idMapping[clientParticipant.id] = participants[index].id;
-      });
-
-      // Create matches using the ID mapping
-      const matchesData = groupData.matches.map(([clientGiverId, clientReceiverId]) => ({
-        group_id: group.id,
-        giver_id: idMapping[clientGiverId],
-        receiver_id: idMapping[clientReceiverId],
-      }));
-
-      const { error: matchesError } = await supabase
-        .from('matches')
-        .insert(matchesData);
-
-      if (matchesError) throw matchesError;
-
-      // Create restrictions if any (also using ID mapping)
-      if (groupData.restrictions && groupData.restrictions.length > 0) {
-        const restrictionsData = groupData.restrictions.map((r) => ({
-          group_id: group.id,
-          participant1_id: idMapping[r.participant1],
-          participant2_id: idMapping[r.participant2],
-        }));
-
-        await supabase.from('restrictions').insert(restrictionsData);
-      }
-
-      return { ...group, participants };
-    } else {
-      // REST API
-      const response = await this.rest.post('/api/groups', groupData);
-      return response.data;
-    }
-  }
-
-  async getGroup(groupId, adminToken) {
-    if (this.mode === 'supabase') {
-      const supabase = getSupabase();
-
-      const { data, error } = await supabase
-        .from('groups')
-        .select(
-          `
-          *,
-          participants (
-            id,
-            name,
-            email,
-            has_viewed,
-            wishlist_updated_at
-          )
-        `
-        )
-        .eq('id', groupId)
-        .eq('admin_token', adminToken)
-        .single();
-
-      if (error) {
-        if (error.code === 'PGRST116') {
-          // No rows returned = invalid token or group ID
-          throw new Error('Invalid group ID or admin token');
-        }
-        throw error;
-      }
-      return data;
-    } else {
-      const response = await this.rest.get(`/api/groups/${groupId}`, {
-        headers: { Authorization: `Bearer ${adminToken}` },
-      });
-      return response.data;
-    }
-  }
-
-  async updateGroup(groupId, updates) {
-    if (this.mode === 'supabase') {
-      const supabase = getSupabase();
-
-      const { data, error } = await supabase
-        .from('groups')
-        .update(updates)
-        .eq('id', groupId)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
-    } else {
-      const response = await this.rest.patch(`/api/groups/${groupId}`, updates);
-      return response.data;
-    }
-  }
-
-  // ========================================
-  // PARTICIPANTS
-  // ========================================
-
-  async getParticipant(participantId) {
-    if (this.mode === 'supabase') {
-      const supabase = getSupabase();
-
-      // Get participant
-      const { data: participant, error: participantError } = await supabase
-        .from('participants')
-        .select('*, group:groups(*)')
-        .eq('id', participantId)
-        .single();
-
-      if (participantError) throw participantError;
-
-      // Get their match (who they're giving to)
-      const { data: match, error: matchError } = await supabase
-        .from('matches')
-        .select(
-          `
-          receiver:participants!matches_receiver_id_fkey (
-            id,
-            name,
-            wishlist:wishlist_items (item_text, item_order)
-          )
-        `
-        )
-        .eq('giver_id', participantId)
-        .single();
-
-      if (matchError && matchError.code !== 'PGRST116') throw matchError;
-
-      // Get participant's own wishlist
-      const { data: wishlist, error: wishlistError } = await supabase
-        .from('wishlist_items')
-        .select('*')
-        .eq('participant_id', participantId)
-        .order('item_order');
-
-      if (wishlistError) throw wishlistError;
-
-      return {
-        ...participant,
-        assignedTo: match?.receiver || null,
-        wishlist: wishlist.map((w) => w.item_text),
-      };
-    } else {
-      const response = await this.rest.get(`/api/participants/${participantId}`);
-      return response.data;
-    }
-  }
-
-  async updateParticipant(participantId, updates) {
-    if (this.mode === 'supabase') {
-      const supabase = getSupabase();
-
-      // Handle wishlist separately
-      if (updates.wishlist) {
-        // Delete existing wishlist
-        await supabase
-          .from('wishlist_items')
-          .delete()
-          .eq('participant_id', participantId);
-
-        // Insert new wishlist
-        const wishlistData = updates.wishlist.map((item, index) => ({
-          participant_id: participantId,
-          item_text: item,
-          item_order: index,
-        }));
-
-        await supabase.from('wishlist_items').insert(wishlistData);
-
-        delete updates.wishlist;
-      }
-
-      // Update participant
-      const { data, error } = await supabase
-        .from('participants')
-        .update(updates)
-        .eq('id', participantId)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
-    } else {
-      const response = await this.rest.patch(
-        `/api/participants/${participantId}`,
-        updates
-      );
-      return response.data;
-    }
-  }
-
-  // ========================================
-  // V2.0 - JOIN FLOW (Auth-based)
+  // GROUP QUERIES
   // ========================================
 
   /**
@@ -446,30 +194,6 @@ class ApiClient {
         minPrice,
         maxPrice,
       });
-      return response.data;
-    }
-  }
-
-  /**
-   * Get current user's vote
-   */
-  async getUserVote(groupId, userId) {
-    if (this.mode === 'supabase') {
-      const supabase = getSupabase();
-
-      const { data, error } = await supabase
-        .from('price_votes')
-        .select('*')
-        .eq('group_id', groupId)
-        .eq('user_id', userId)
-        .single();
-
-      if (error && error.code !== 'PGRST116') throw error;
-      return data || null;
-    } else {
-      const response = await this.rest.get(
-        `/api/groups/${groupId}/vote/${userId}`
-      );
       return response.data;
     }
   }
@@ -706,63 +430,6 @@ class ApiClient {
   }
 
   /**
-   * Get group for organizer dashboard (includes all data)
-   */
-  async getGroupForOrganizer(groupId, organizerId) {
-    if (this.mode === 'supabase') {
-      const supabase = getSupabase();
-
-      // Get group and verify organizer
-      const { data: group, error: groupError } = await supabase
-        .from('groups')
-        .select('*')
-        .eq('id', groupId)
-        .eq('organizer_id', organizerId)
-        .single();
-
-      if (groupError) {
-        if (groupError.code === 'PGRST116') {
-          throw new Error('Grupo no encontrado o no tienes permisos');
-        }
-        throw groupError;
-      }
-
-      // Get participants with user details
-      const { data: participants } = await supabase
-        .from('participants')
-        .select(`
-          id, name, user_id, joined_at, kicked, wishlist_updated_at,
-          users (name, avatar_url, email)
-        `)
-        .eq('group_id', groupId)
-        .eq('kicked', false)
-        .order('joined_at', { ascending: true });
-
-      // Get price votes
-      const { data: priceVotes } = await supabase
-        .from('price_votes')
-        .select('min_price, max_price, user_id')
-        .eq('group_id', groupId);
-
-      // Get restrictions
-      const { data: restrictions } = await supabase
-        .from('restrictions')
-        .select('id, participant1_id, participant2_id, is_self_imposed, forced_by_organizer, created_by')
-        .eq('group_id', groupId);
-
-      return {
-        ...group,
-        participants: participants || [],
-        priceVotes: priceVotes || [],
-        restrictions: restrictions || [],
-      };
-    } else {
-      const response = await this.rest.get(`/api/organizer/groups/${groupId}`);
-      return response.data;
-    }
-  }
-
-  /**
    * Trigger raffle manually (organizer only)
    * Calls the Edge Function to execute matching and send emails
    */
@@ -893,73 +560,6 @@ class ApiClient {
     }
   }
 
-  /**
-   * Get group info for participant (post-raffle view)
-   */
-  async getGroupForParticipant(groupId, userId) {
-    if (this.mode === 'supabase') {
-      const supabase = getSupabase();
-
-      // Get group basic info
-      const { data: group, error: groupError } = await supabase
-        .from('groups')
-        .select('id, name, event_date, deadline, price_min, price_max, raffled_at')
-        .eq('id', groupId)
-        .single();
-
-      if (groupError) {
-        if (groupError.code === 'PGRST116') {
-          throw new Error('Grupo no encontrado');
-        }
-        throw groupError;
-      }
-
-      // Get my participant record
-      const { data: myParticipant } = await supabase
-        .from('participants')
-        .select('id, name, user_id, kicked')
-        .eq('group_id', groupId)
-        .eq('user_id', userId)
-        .eq('kicked', false)
-        .single();
-
-      if (!myParticipant) {
-        throw new Error('No eres participante de este grupo');
-      }
-
-      // Get participant count
-      const { count } = await supabase
-        .from('participants')
-        .select('id', { count: 'exact', head: true })
-        .eq('group_id', groupId)
-        .eq('kicked', false);
-
-      // Get price votes average
-      const { data: priceVotes } = await supabase
-        .from('price_votes')
-        .select('min_price, max_price')
-        .eq('group_id', groupId);
-
-      let finalPriceRange = { min: group.price_min, max: group.price_max };
-      if (priceVotes && priceVotes.length > 0) {
-        finalPriceRange = {
-          min: Math.round(priceVotes.reduce((sum, v) => sum + v.min_price, 0) / priceVotes.length),
-          max: Math.round(priceVotes.reduce((sum, v) => sum + v.max_price, 0) / priceVotes.length),
-        };
-      }
-
-      return {
-        ...group,
-        participantCount: count || 0,
-        finalPriceRange,
-        myParticipant,
-      };
-    } else {
-      const response = await this.rest.get(`/api/groups/${groupId}/participant-view`);
-      return response.data;
-    }
-  }
-
   // ========================================
   // USER GROUPS (MIS SORTEOS)
   // ========================================
@@ -1046,6 +646,116 @@ class ApiClient {
     } else {
       // REST mode - not implemented
       throw new Error('getUserGroups not implemented for REST mode');
+    }
+  }
+
+  // ========================================
+  // V2.1 - SIMPLIFIED GROUP CREATION
+  // ========================================
+
+  /**
+   * Create group with simplified flow (v2.1)
+   * - No pre-defined participants
+   * - No pre-computed matches
+   * - Organizer optionally joins as participant
+   */
+  async createGroupSimplified({ name, eventDate, deadline, budgetMin, budgetMax, participateAsOrg }, user) {
+    if (this.mode === 'supabase') {
+      const supabase = getSupabase();
+
+      log('Creating group (simplified):', { name, eventDate, deadline, budgetMin, budgetMax, participateAsOrg });
+
+      // 1. Create group with organizer_id
+      const { data: group, error: groupError } = await supabase
+        .from('groups')
+        .insert({
+          name,
+          event_date: eventDate,
+          deadline,
+          price_min: budgetMin || 10000,
+          price_max: budgetMax || 20000,
+          currency: 'CLP',
+          organizer_id: user.id,
+          max_participants: 20,
+        })
+        .select()
+        .single();
+
+      if (groupError) {
+        log('Error creating group:', groupError);
+        throw groupError;
+      }
+
+      log('Group created:', group);
+
+      // 2. If organizer wants to participate, create participant record
+      if (participateAsOrg) {
+        const userName = user.user_metadata?.full_name ||
+                         user.user_metadata?.name ||
+                         user.email?.split('@')[0] ||
+                         'Organizador';
+
+        const { error: participantError } = await supabase
+          .from('participants')
+          .insert({
+            group_id: group.id,
+            user_id: user.id,
+            name: userName,
+            joined_at: new Date().toISOString(),
+          });
+
+        if (participantError) {
+          log('Error adding organizer as participant:', participantError);
+          // Don't fail group creation, just log
+        } else {
+          log('Organizer added as participant');
+
+          // 3. Add initial price vote from organizer
+          await supabase.from('price_votes').insert({
+            group_id: group.id,
+            user_id: user.id,
+            min_price: budgetMin || 10000,
+            max_price: budgetMax || 20000,
+          });
+        }
+      }
+
+      return group;
+    } else {
+      const response = await this.rest.post('/api/groups/create-simplified', {
+        name,
+        eventDate,
+        deadline,
+        budgetMin,
+        budgetMax,
+        participateAsOrg,
+      });
+      return response.data;
+    }
+  }
+
+  /**
+   * Get group's join_code by group ID (for legacy redirects)
+   */
+  async getGroupJoinCode(groupId) {
+    if (this.mode === 'supabase') {
+      const supabase = getSupabase();
+
+      const { data, error } = await supabase
+        .from('groups')
+        .select('join_code')
+        .eq('id', groupId)
+        .single();
+
+      if (error) {
+        log('Error fetching join code:', error);
+        throw error;
+      }
+
+      return data?.join_code;
+    } else {
+      const response = await this.rest.get(`/api/groups/${groupId}/join-code`);
+      return response.data.join_code;
     }
   }
 

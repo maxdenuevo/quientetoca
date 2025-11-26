@@ -1,11 +1,10 @@
 import { useEffect, useCallback } from 'react';
-import PropTypes from 'prop-types';
 import { IconClose } from '../../lib/icons';
 
 /**
- * Modal Component
+ * Modal Component - Neon Editorial Design
  *
- * Modal accesible con backdrop y estilo Soft UI.
+ * Modal con backdrop blur y estilo neon.
  * Cierra con ESC o click fuera.
  */
 export default function Modal({
@@ -58,7 +57,7 @@ export default function Modal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-brand-carbon/50 dark:bg-black/60 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-neon-base/90 backdrop-blur-sm p-4"
       onClick={handleOverlayClick}
       role="dialog"
       aria-modal="true"
@@ -67,21 +66,19 @@ export default function Modal({
       <div
         className={`
           w-full ${sizes[size]}
-          bg-brand-marfil dark:bg-dark-surface
-          rounded-soft-lg
-          border border-brand-arena dark:border-dark-border
-          shadow-soft-lg
+          bg-neon-surface
+          border border-neon-border
           max-h-[90vh] overflow-hidden flex flex-col
           ${className}
         `.trim()}
       >
-        {/* Header */}
+        {/* Header with laser line */}
         {(title || showCloseButton) && (
-          <div className="flex items-center justify-between p-4 border-b border-brand-arena dark:border-dark-border">
+          <div className="flex items-center justify-between p-4 border-b-2 border-accent">
             {title && (
               <h2
                 id="modal-title"
-                className="text-xl font-bold text-brand-carbon dark:text-dark-text-primary"
+                className="font-display text-xl uppercase tracking-wide text-text-primary"
               >
                 {title}
               </h2>
@@ -89,7 +86,7 @@ export default function Modal({
             {showCloseButton && (
               <button
                 onClick={onClose}
-                className="p-2 hover:bg-brand-arena dark:hover:bg-dark-surface-hover rounded-soft transition-colors ml-auto text-brand-carbon dark:text-dark-text-primary"
+                className="p-2 hover:bg-neon-elevated transition-colors ml-auto text-text-secondary hover:text-accent"
                 aria-label="Cerrar modal"
               >
                 <IconClose className="w-5 h-5" />
@@ -99,7 +96,7 @@ export default function Modal({
         )}
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-4 text-brand-carbon dark:text-dark-text-primary">
+        <div className="flex-1 overflow-y-auto p-4 text-text-primary font-body">
           {children}
         </div>
       </div>
@@ -113,8 +110,8 @@ Modal.Footer = function ModalFooter({ children, className = '' }) {
     <div
       className={`
         flex items-center justify-end gap-3
-        p-4 border-t border-brand-arena dark:border-dark-border
-        bg-brand-arena/30 dark:bg-dark-bg
+        p-4 border-t border-neon-border
+        bg-neon-elevated
         ${className}
       `.trim()}
     >
@@ -123,18 +120,3 @@ Modal.Footer = function ModalFooter({ children, className = '' }) {
   );
 };
 
-Modal.propTypes = {
-  isOpen: PropTypes.bool.isRequired,
-  onClose: PropTypes.func.isRequired,
-  title: PropTypes.string,
-  children: PropTypes.node.isRequired,
-  size: PropTypes.oneOf(['sm', 'md', 'lg', 'xl', 'full']),
-  showCloseButton: PropTypes.bool,
-  closeOnOverlayClick: PropTypes.bool,
-  className: PropTypes.string,
-};
-
-Modal.Footer.propTypes = {
-  children: PropTypes.node.isRequired,
-  className: PropTypes.string,
-};

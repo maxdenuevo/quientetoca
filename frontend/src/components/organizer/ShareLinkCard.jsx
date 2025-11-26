@@ -1,13 +1,12 @@
-import React, { useState } from 'react';
-import PropTypes from 'prop-types';
+import { useState } from 'react';
 import { IconLink, IconCopy, IconCheck, IconWhatsapp, IconQrCode } from '../../lib/icons';
 import { Card, Button } from '../ui';
 import toast from 'react-hot-toast';
 
 /**
- * ShareLinkCard Component
+ * ShareLinkCard - Neon Editorial Design
  *
- * Shows the group join link with copy and share options
+ * Shows the group join link with copy and share options.
  */
 export default function ShareLinkCard({ joinCode, groupName }) {
   const [copied, setCopied] = useState(false);
@@ -29,7 +28,7 @@ export default function ShareLinkCard({ joinCode, groupName }) {
 
   const handleWhatsAppShare = () => {
     const message = encodeURIComponent(
-      `🎁 ¡Te invito a nuestro Amigo Secreto!\n\n` +
+      `¡Te invito a nuestro Amigo Secreto!\n\n` +
       `Grupo: ${groupName}\n\n` +
       `Únete aquí: ${joinUrl}\n\n` +
       `Haz click en el link, inicia sesión con Google y listo.`
@@ -38,10 +37,10 @@ export default function ShareLinkCard({ joinCode, groupName }) {
   };
 
   return (
-    <Card padding="lg">
+    <Card padding="lg" variant="outlined">
       <Card.Header>
         <Card.Title className="flex items-center gap-2">
-          <IconLink className="w-5 h-5 text-brand-terracota" />
+          <IconLink className="w-5 h-5 text-accent-hotbrick" />
           Link de Invitación
         </Card.Title>
       </Card.Header>
@@ -49,16 +48,16 @@ export default function ShareLinkCard({ joinCode, groupName }) {
       <Card.Body>
         {/* Join Code Display */}
         <div className="text-center mb-4">
-          <p className="text-sm text-accent-piedra dark:text-dark-text-secondary mb-1">Código del grupo</p>
-          <p className="text-4xl font-mono font-black tracking-wider text-brand-terracota">
+          <p className="text-sm text-text-secondary font-mono uppercase mb-1">Código del grupo</p>
+          <p className="font-display text-4xl tracking-wider text-accent-hotbrick">
             {joinCode}
           </p>
         </div>
 
         {/* URL Display */}
-        <div className="bg-brand-arena/30 dark:bg-dark-surface-hover rounded-soft-lg p-3 mb-4">
-          <p className="text-xs text-accent-piedra dark:text-dark-text-secondary mb-1">URL completa</p>
-          <p className="font-mono text-sm break-all select-all text-brand-carbon dark:text-dark-text-primary">
+        <div className="bg-neon-elevated border border-neon-border p-3 mb-4">
+          <p className="text-xs text-text-secondary font-mono uppercase mb-1">URL completa</p>
+          <p className="font-mono text-sm break-all select-all text-text-primary">
             {joinUrl}
           </p>
         </div>
@@ -76,7 +75,7 @@ export default function ShareLinkCard({ joinCode, groupName }) {
 
           <button
             onClick={handleWhatsAppShare}
-            className="flex items-center justify-center gap-2 px-4 py-3 bg-[#25D366] text-white rounded-soft font-medium hover:bg-[#128C7E] transition-colors shadow-soft"
+            className="flex items-center justify-center gap-2 px-4 py-3 bg-[#25D366] text-neon-base font-headline font-semibold uppercase tracking-wider hover:bg-[#128C7E] transition-colors"
           >
             <IconWhatsapp className="w-5 h-5" />
             WhatsApp
@@ -97,7 +96,7 @@ export default function ShareLinkCard({ joinCode, groupName }) {
 
         {showQR && (
           <div className="mt-3 flex justify-center">
-            <div className="p-4 bg-white dark:bg-dark-surface rounded-soft-lg border border-brand-arena dark:border-dark-border shadow-soft">
+            <div className="p-4 bg-white border border-neon-border">
               <img
                 src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(joinUrl)}`}
                 alt="QR Code"
@@ -108,7 +107,7 @@ export default function ShareLinkCard({ joinCode, groupName }) {
         )}
 
         {/* Help Text */}
-        <p className="text-xs text-accent-piedra dark:text-dark-text-secondary text-center mt-4">
+        <p className="text-xs text-text-secondary text-center mt-4 font-mono">
           Comparte este link con los participantes. Pueden unirse con Google o Microsoft.
         </p>
       </Card.Body>
@@ -116,7 +115,3 @@ export default function ShareLinkCard({ joinCode, groupName }) {
   );
 }
 
-ShareLinkCard.propTypes = {
-  joinCode: PropTypes.string.isRequired,
-  groupName: PropTypes.string.isRequired,
-};
